@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neurosurgery Logbook</title>
+    <title>Neurosurgery e-Logbook</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -13,8 +13,8 @@
         
         /* HEADER & SETTINGS */
         .header { text-align: center; border-bottom: 3px solid #003366; padding-bottom: 15px; margin-bottom: 20px; }
-        .header h1 { margin: 0; color: #003366; font-size: 1.5rem; text-transform: uppercase; }
-        .header h2 { margin: 5px 0; color: #555; font-size: 1.1rem; }
+        .header h1 { margin: 0; color: #003366; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        .header h2 { margin: 5px 0; color: #555; font-size: 1rem; font-weight: normal; }
         .settings-btn { position: absolute; top: 15px; right: 15px; background: #eee; border: 1px solid #ccc; padding: 8px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; width: 40px; height: 40px; }
 
         /* MODAL */
@@ -76,7 +76,8 @@
     <button class="settings-btn" onclick="openSetup()" title="Connect Drive">⚙️</button>
     
     <div class="header">
-        <h1>Neurosurgery Logbook</h1>
+        <h1>Neurosurgery e-Logbook</h1>
+        <h2>Surgical Training Record</h2>
     </div>
 
     <div class="modal-overlay" id="setup-modal">
@@ -281,7 +282,7 @@ function sv64(f,b,n){var s=b.split('base64,'),t=s[0].split(':')[1].split(';')[0]
 </div>
 
 <script>
-    // --- CATEGORY MAPPING ---
+    // --- CATEGORY MAPPING (ALL PDF CATEGORIES) ---
     const categories = [
         { val: "", text: "-- Select Category --" },
         { group: "1. Cerebrovascular (Adult)", items: [
