@@ -3,162 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Advanced Neurosurgery Logbook</title>
+    <title>Universal Neuro Logbook</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        /* BASE STYLES */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 10px; font-size: 13px; }
-        .container { width: 100%; max-width: 1200px; margin: 0 auto; background: white; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box; position: relative; }
+        /* --- CORE STYLES --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 10px; font-size: 13px; }
+        .container { width: 100%; max-width: 1400px; margin: 0 auto; background: white; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-radius: 10px; position: relative; }
         
-        /* HEADER */
-        .college-header { text-align: center; border-bottom: 3px solid #003366; padding-bottom: 15px; margin-bottom: 20px; }
-        .college-header h1 { margin: 0; color: #003366; font-size: 1.4rem; text-transform: uppercase; }
-        .college-header h2 { margin: 5px 0; color: #333; font-size: 1rem; }
-        .settings-btn { position: absolute; top: 15px; right: 15px; background: #eee; border: 1px solid #ccc; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem; }
+        /* HEADER & SETTINGS */
+        .header { text-align: center; border-bottom: 3px solid #003366; padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #003366; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        .header h2 { margin: 5px 0; color: #666; font-size: 1rem; font-weight: normal; }
+        .settings-btn { position: absolute; top: 15px; right: 15px; background: #fff; border: 1px solid #ccc; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s; }
+        .settings-btn:hover { background: #f8f9fa; transform: scale(1.05); }
 
         /* SETUP MODAL */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .setup-input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
-        .btn-connect { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
-
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+        .setup-input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; box-sizing: border-box; }
+        .btn-green { background: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1em; transition: 0.2s; }
+        .btn-green:hover { background: #218838; }
+        .step-list { text-align: left; padding-left: 20px; color: #555; line-height: 1.6; }
+        
         /* TABS */
-        .tab-buttons { display: flex; overflow-x: auto; gap: 5px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #ddd; }
-        .tab-btn { padding: 10px 20px; background: #eee; border: none; border-radius: 5px 5px 0 0; font-weight: bold; white-space: nowrap; cursor: pointer; color: #555; }
-        .tab-btn.active { background: #003366; color: white; }
-        .tab-content { display: none; }
+        .tab-buttons { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #e9ecef; padding-bottom: 5px; }
+        .tab-btn { padding: 12px 20px; background: #f8f9fa; border: none; border-radius: 8px 8px 0 0; font-weight: bold; cursor: pointer; color: #6c757d; white-space: nowrap; transition: 0.2s; }
+        .tab-btn:hover { background: #e9ecef; }
+        .tab-btn.active { background: #003366; color: white; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* SECTIONS & TABLES */
-        h2.section-title { background-color: #e6f0ff; padding: 8px; border-left: 5px solid #003366; margin-top: 20px; font-size: 1rem; color: #003366; font-weight: bold; }
-        h3 { color: #555; margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 3px; font-size: 0.9rem; font-weight: bold; }
-        
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; }
-        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; vertical-align: middle; }
-        th { background-color: #f0f0f0; font-weight: bold; color: #333; }
-        
+        /* TABLES */
+        h2.section-title { background-color: #eef4ff; padding: 12px; border-left: 5px solid #003366; margin-top: 30px; font-size: 1.1rem; color: #003366; font-weight: bold; border-radius: 0 5px 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; background: white; }
+        th, td { border: 1px solid #e9ecef; padding: 10px; text-align: left; vertical-align: middle; }
+        th { background-color: #f8f9fa; font-weight: bold; color: #495057; text-transform: uppercase; font-size: 0.75rem; }
+        tr:hover { background-color: #f8f9fa; }
+
         /* INPUTS */
-        input, textarea, select { font-size: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        textarea { resize: vertical; min-height: 30px; }
-        select { background: white; }
-
-        /* SUMMARY SPECIFIC */
-        .summary-table td:last-child { width: 60px; text-align: center; }
-        .summary-table input { text-align: center; font-weight: bold; background: #fff; border: 1px solid #eee; }
-        .subtotal-row { background-color: #333; color: white; font-weight: bold; }
+        .summary-table td:last-child { width: 70px; text-align: center; }
+        .summary-table input { text-align: center; font-weight: bold; background: white; border: 1px solid #dee2e6; width: 100%; padding: 5px; border-radius: 4px; color: #003366; }
+        .subtotal-row { background-color: #343a40; color: white; font-weight: bold; }
         .subtotal-row td { color: white; }
+        
+        input, textarea, select { font-size: 13px; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
+        textarea { resize: vertical; min-height: 38px; }
+        
+        /* IMAGES & BUTTONS */
+        .img-cell { text-align: center; font-size: 0.8em; }
+        input[type="file"] { border: none; font-size: 0.85em; width: 90px; }
+        .img-link { display: inline-block; margin-top: 4px; font-size: 0.8em; color: #fff; text-decoration: none; background: #17a2b8; padding: 2px 6px; border-radius: 4px; }
+        
+        .btn-add { background: #003366; color: white; padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-weight: bold; font-size: 0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-del { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
 
-        /* LOG SPECIFIC */
-        .log-table th { white-space: nowrap; }
-        .btn-add { background: #003366; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; font-weight: bold; font-size: 0.85rem; }
-        .btn-del { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
-
-        /* CLOUD ACTIONS */
-        .cloud-actions { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; border: 1px solid #2196F3; }
-        .cloud-btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 5px; width: 100%; max-width: 180px; color: white; }
+        /* CLOUD BOX */
+        .cloud-box { background: #e8f0fe; padding: 25px; border-radius: 12px; margin-top: 40px; text-align: center; border: 1px solid #b3d7ff; }
+        .cloud-btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 8px; width: 100%; max-width: 200px; color: white; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .cloud-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
         
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .log-table thead { display: none; }
-            .log-table tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-            .log-table td { display: block; border: none; padding: 5px 0; }
-            .log-table td::before { content: attr(data-label); font-weight: bold; display: block; color: #999; font-size: 0.8em; margin-bottom: 2px; }
+            .log-table tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+            .log-table td { display: flex; justify-content: space-between; align-items: center; border: none; border-bottom: 1px solid #eee; padding: 8px 0; }
+            .log-table td:last-child { border-bottom: none; }
+            .log-table td::before { content: attr(data-label); font-weight: bold; color: #6c757d; font-size: 0.85em; text-transform: uppercase; margin-right: 10px; }
+            input, textarea, select { width: 60%; text-align: right; }
+            textarea { width: 100%; text-align: left; margin-top: 5px; }
+            .log-table td[data-label="Diagnosis"], .log-table td[data-label="Details"] { flex-direction: column; align-items: flex-start; }
         }
 
         /* PDF MODE */
         .show-for-pdf { display: block !important; }
-        .pdf-mode .tab-buttons, .pdf-mode .cloud-actions, .pdf-mode .settings-btn, .pdf-mode .btn-add, .pdf-mode .btn-del { display: none !important; }
-        .pdf-mode input, .pdf-mode textarea, .pdf-mode select { border: none !important; background: transparent !important; padding: 0; appearance: none; }
+        .pdf-mode .tab-buttons, .pdf-mode .cloud-box, .pdf-mode .settings-btn, .pdf-mode .btn-add, .pdf-mode .btn-del, .pdf-mode .header { display: none !important; }
+        .pdf-mode .container { box-shadow: none; max-width: 100%; width: 100%; }
+        .pdf-mode input, .pdf-mode textarea, .pdf-mode select { border: none !important; background: transparent !important; padding: 0; appearance: none; text-align: left !important; width: auto !important; }
+        .pdf-mode input[type="file"] { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container" id="logbook-content">
-    <button class="settings-btn" onclick="openSetup()" title="Cloud Settings">⚙️</button>
+    <button class="settings-btn" onclick="openSetup()">⚙️ Connect Drive</button>
     
-    <div class="college-header">
-        <h1>Goa Medical College</h1>
-        <h2>Department of Neurosurgery</h2>
-        <p>MCh Logbook (Advanced)</p>
+    <div class="header">
+        <h1>Neurosurgery Logbook</h1>
+        <h2>Universal MCh Format (Australian Hybrid)</h2>
     </div>
 
     <div class="modal-overlay" id="setup-modal">
         <div class="modal-box">
-            <h3>⚙️ Connect Google Drive</h3>
-            <p>Paste your Google Apps Script Web App URL below:</p>
-            <input type="text" id="user-url" class="setup-input" placeholder="https://script.google.com/macros/s/..../exec">
-            <button class="btn-connect" onclick="saveUrl()">Save & Connect</button>
-            <button onclick="closeSetup()" style="margin-top:10px; background:none; border:none; color:#666; cursor:pointer; width:100%">Cancel</button>
+            <h3 style="margin-top:0; color:#003366;">⚙️ Connect Your Cloud</h3>
+            <p>To save data to <strong>your own</strong> Google Drive, follow these one-time steps:</p>
+            <ol class="step-list">
+                <li>Create a new Google Sheet named "Logbook DB".</li>
+                <li>Go to <strong>Extensions > Apps Script</strong>.</li>
+                <li>Paste the backend code (provided separately).</li>
+                <li>Click <strong>Deploy > New Deployment</strong>. Select "Web App".</li>
+                <li>Set "Who has access" to <strong>Anyone</strong>. Click Deploy.</li>
+                <li>Copy the <strong>Web App URL</strong> and paste it below.</li>
+            </ol>
+            <input type="text" id="user-url" class="setup-input" placeholder="Paste URL here (https://script.google.com/...)">
+            <button class="btn-green" onclick="saveUrl()">Save & Connect</button>
+            <button onclick="closeSetup()" style="margin-top:15px; background:none; border:none; color:#666; cursor:pointer; width:100%; text-decoration:underline;">Close</button>
         </div>
     </div>
 
     <div class="tab-buttons" data-html2canvas-ignore="true">
         <button class="tab-btn active" onclick="openTab('summary')">1. Auto-Summary</button>
-        <button class="tab-btn" onclick="openTab('logs')">2. Daily Logs</button>
+        <button class="tab-btn" onclick="openTab('logs')">2. Daily Logs (+Images)</button>
         <button class="tab-btn" onclick="openTab('academics')">3. Academics</button>
     </div>
 
     <div id="summary" class="tab-content active">
-        <p style="background:#e3f2fd; padding:10px; border-radius:5px; font-size:0.9em;">
-            <strong>ℹ️ Auto-Update:</strong> Add cases in "Daily Logs" to update these numbers automatically.
-        </p>
+        <div style="background:#e8f0fe; padding:15px; border-radius:8px; margin-bottom:20px; border-left:5px solid #0056b3; font-size:0.95em;">
+            <strong>ℹ️ How it works:</strong> Add patients in the <strong>Daily Logs</strong> tab. Select the correct <strong>Category</strong>. This summary page will calculate the totals automatically.
+        </div>
 
         <h2 class="section-title">A. Endovascular & Cerebrovascular</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
             <tbody>
                 <tr><td>Aneurysm Coiling (Simple)</td><td><input readonly id="endo-coil-simple" value="0"></td></tr>
-                <tr><td>Aneurysm Coiling (Balloon Assisted)</td><td><input readonly id="endo-coil-balloon" value="0"></td></tr>
-                <tr><td>Aneurysm Coiling (Stent Assisted)</td><td><input readonly id="endo-coil-stent" value="0"></td></tr>
+                <tr><td>Aneurysm Coiling (Balloon Asst)</td><td><input readonly id="endo-coil-balloon" value="0"></td></tr>
+                <tr><td>Aneurysm Coiling (Stent Asst)</td><td><input readonly id="endo-coil-stent" value="0"></td></tr>
                 <tr><td>Flow Diverter Placement</td><td><input readonly id="endo-flow" value="0"></td></tr>
                 <tr><td>AVM Embolization</td><td><input readonly id="endo-avm" value="0"></td></tr>
                 <tr><td>Tumour Embolization</td><td><input readonly id="endo-tumour" value="0"></td></tr>
-                <tr><td>Stroke Thrombolysis / Thrombectomy</td><td><input readonly id="endo-stroke" value="0"></td></tr>
-                <tr><td>Vasospasm Treatment (Chemical/Balloon)</td><td><input readonly id="endo-vaso" value="0"></td></tr>
-                <tr><td>Other Endovascular (DSA only etc.)</td><td><input readonly id="endo-other" value="0"></td></tr>
-                
+                <tr><td>Stroke Thrombolysis/Thrombectomy</td><td><input readonly id="endo-stroke" value="0"></td></tr>
+                <tr><td>Vasospasm Tx (Chem/Balloon)</td><td><input readonly id="endo-vaso" value="0"></td></tr>
                 <tr><td>Aneurysm Clipping (Open)</td><td><input readonly id="cv-clip" value="0"></td></tr>
                 <tr><td>AVM Excision (Open)</td><td><input readonly id="cv-avm-open" value="0"></td></tr>
-                <tr><td>ICH Evacuation</td><td><input readonly id="cv-ich" value="0"></td></tr>
                 <tr><td>EC-IC Bypass</td><td><input readonly id="cv-bypass" value="0"></td></tr>
+                <tr><td>ICH Evacuation</td><td><input readonly id="cv-ich" value="0"></td></tr>
                 <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
 
         <h2 class="section-title">B. Tumour (Cranial)</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
             <tbody>
-                <tr><td>Glioma: Low/High Grade</td><td><input readonly id="tm-glioma" value="0"></td></tr>
+                <tr><td>Glioma (Low/High Grade)</td><td><input readonly id="tm-glioma" value="0"></td></tr>
                 <tr><td>Meningioma</td><td><input readonly id="tm-meningioma" value="0"></td></tr>
                 <tr><td>Pituitary (Trans-Sphenoidal/Cranial)</td><td><input readonly id="tm-pit" value="0"></td></tr>
-                <tr><td>CP Angle / Acoustic</td><td><input readonly id="tm-cpangle" value="0"></td></tr>
+                <tr><td>CP Angle / Acoustic Neuroma</td><td><input readonly id="tm-cpangle" value="0"></td></tr>
                 <tr><td>Metastasis</td><td><input readonly id="tm-mets" value="0"></td></tr>
                 <tr><td>Skull Base Approach</td><td><input readonly id="tm-skullbase" value="0"></td></tr>
-                <tr><td>Posterior Fossa Tumour</td><td><input readonly id="tm-pfossa" value="0"></td></tr>
+                <tr><td>Posterior Fossa / Intraventricular</td><td><input readonly id="tm-pfossa" value="0"></td></tr>
                 <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
 
         <h2 class="section-title">C. Spine</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
             <tbody>
-                <tr><td>ACDF / Cervical Fusion</td><td><input readonly id="sp-acdf" value="0"></td></tr>
-                <tr><td>Discectomy (Cervical/Lumbar)</td><td><input readonly id="sp-disc" value="0"></td></tr>
+                <tr><td>ACDF / Ant Cervical Fusion</td><td><input readonly id="sp-acdf" value="0"></td></tr>
+                <tr><td>Discectomy (Cerv/Thor/Lumb)</td><td><input readonly id="sp-disc" value="0"></td></tr>
                 <tr><td>Laminectomy / Decompression</td><td><input readonly id="sp-lam" value="0"></td></tr>
                 <tr><td>Posterior Instrumented Fusion</td><td><input readonly id="sp-fusion" value="0"></td></tr>
-                <tr><td>Spinal Tumour</td><td><input readonly id="sp-tumour" value="0"></td></tr>
-                <tr><td>Spinal Trauma</td><td><input readonly id="sp-trauma" value="0"></td></tr>
-                <tr><td>CV Junction</td><td><input readonly id="sp-cvj" value="0"></td></tr>
+                <tr><td>Spinal Tumour (Extra/Intra)</td><td><input readonly id="sp-tumour" value="0"></td></tr>
+                <tr><td>Spinal Trauma / Stabilization</td><td><input readonly id="sp-trauma" value="0"></td></tr>
+                <tr><td>CV Junction / Chiari</td><td><input readonly id="sp-cvj" value="0"></td></tr>
                 <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
 
         <h2 class="section-title">D. Trauma & Paediatric</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
             <tbody>
                 <tr><td>Acute/Chronic Subdural</td><td><input readonly id="tr-sdh" value="0"></td></tr>
                 <tr><td>Extradural Haematoma</td><td><input readonly id="tr-edh" value="0"></td></tr>
@@ -179,10 +197,11 @@
                 <tr>
                     <th style="width:10%">Date</th>
                     <th style="width:12%">IP/Name</th>
-                    <th style="width:25%">Category (Auto-Stats)</th>
-                    <th>Dx & Procedure Details</th>
+                    <th style="width:20%">Category</th>
+                    <th>Diagnosis & Procedure</th>
                     <th style="width:10%">Role</th>
                     <th style="width:10%">Surgeon</th>
+                    <th style="width:10%">Imaging</th>
                     <th style="width:5%">Del</th>
                 </tr>
             </thead>
@@ -196,10 +215,11 @@
                 <tr>
                     <th style="width:10%">Date</th>
                     <th style="width:12%">IP/Name</th>
-                    <th style="width:25%">Category (Auto-Stats)</th>
-                    <th>Dx & Procedure Details</th>
+                    <th style="width:20%">Category</th>
+                    <th>Diagnosis & Procedure</th>
                     <th style="width:10%">Role</th>
                     <th style="width:10%">Surgeon</th>
+                    <th style="width:10%">Imaging</th>
                     <th style="width:5%">Del</th>
                 </tr>
             </thead>
@@ -209,65 +229,67 @@
 
     <div id="academics" class="tab-content">
         
-        <h2 class="section-title">Seminars / Journal Club / Case Presentations</h2>
+        <h2 class="section-title">Seminars / Journal Club</h2>
         <button class="btn-add" onclick="addAcademicRow('log-seminars', ['Date','Topic','Type','Faculty'])">+ Add Activity</button>
         <table class="log-table" id="log-seminars">
-            <thead><tr><th style="width:15%">Date</th><th>Topic</th><th style="width:15%">Type</th><th style="width:20%">Faculty</th><th style="width:5%">Del</th></tr></thead>
+            <thead><tr><th style="width:15%">Date</th><th>Topic</th><th style="width:15%">Type</th><th>Faculty</th><th>Del</th></tr></thead>
             <tbody></tbody>
         </table>
 
         <h2 class="section-title">Workshops & Conferences</h2>
-        <button class="btn-add" onclick="addAcademicRow('log-conf', ['Date','Conference/Workshop Name','Location','Role (Delegate/Presenter)'])">+ Add Conference</button>
+        <button class="btn-add" onclick="addAcademicRow('log-conf', ['Date','Conference Name','Location','Role (Delegate/Presenter)'])">+ Add Conf</button>
         <table class="log-table" id="log-conf">
-            <thead><tr><th style="width:15%">Date</th><th>Conference/Workshop Name</th><th style="width:20%">Location</th><th style="width:20%">Role</th><th style="width:5%">Del</th></tr></thead>
+            <thead><tr><th style="width:15%">Date</th><th>Name</th><th>Location</th><th>Role</th><th>Del</th></tr></thead>
             <tbody></tbody>
         </table>
 
-        <h2 class="section-title">Paper Presentations</h2>
-        <button class="btn-add" onclick="addAcademicRow('log-paper', ['Date','Title of Paper','Conference','Award (if any)'])">+ Add Paper</button>
-        <table class="log-table" id="log-paper">
-            <thead><tr><th style="width:15%">Date</th><th>Title of Paper</th><th style="width:20%">Conference</th><th style="width:20%">Award</th><th style="width:5%">Del</th></tr></thead>
-            <tbody></tbody>
-        </table>
-
-        <h2 class="section-title">Publications</h2>
-        <button class="btn-add" onclick="addAcademicRow('log-pubs', ['Year','Title','Journal','Status (Submitted/Published)'])">+ Add Publication</button>
+        <h2 class="section-title">Papers & Publications</h2>
+        <button class="btn-add" onclick="addAcademicRow('log-pubs', ['Year/Date','Title','Journal/Conf','Status/Award'])">+ Add Paper/Pub</button>
         <table class="log-table" id="log-pubs">
-            <thead><tr><th style="width:15%">Year</th><th>Title</th><th style="width:20%">Journal</th><th style="width:20%">Status</th><th style="width:5%">Del</th></tr></thead>
+            <thead><tr><th style="width:15%">Date</th><th>Title</th><th>Venue</th><th>Status</th><th>Del</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
 
-    <div class="cloud-actions" id="cloud-actions" data-html2canvas-ignore="true">
-        <h3>☁️ Cloud Sync</h3>
-        <p id="connected-msg" style="font-size:0.9em; color:#0056b3; margin-bottom:15px">Not connected. Click ⚙️ to setup.</p>
-        <button class="cloud-btn" style="background:#28a745" onclick="saveToCloud()">⬆ Save Data</button>
-        <button class="cloud-btn" style="background:#007bff" onclick="loadFromCloud()">⬇ Load Data</button>
-        <br>
-        <div id="status" style="margin-top:10px; font-weight:bold; height:20px;"></div>
-        <hr style="margin:20px 0; border:0; border-top:1px solid #ddd;">
-        <button class="cloud-btn" style="background:#555" onclick="generatePDF()">Download PDF</button>
+    <div class="cloud-box" id="cloud-actions" data-html2canvas-ignore="true">
+        <h3 style="margin-top:0">☁️ Cloud Sync & Export</h3>
+        <p id="connected-msg" style="color:#666; margin-bottom:15px; font-size:0.9em;">
+            Status: <span style="color:#dc3545">Not Connected</span>. Click the ⚙️ icon at the top right to setup Google Drive.
+        </p>
+        
+        <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+            <button class="cloud-btn" style="background:#28a745" onclick="saveToCloud()">⬆ Save to Drive</button>
+            <button class="cloud-btn" style="background:#007bff" onclick="loadFromCloud()">⬇ Load from Drive</button>
+        </div>
+        
+        <div style="margin-top:10px; font-size:0.8em; color:#666;">
+            OR <a href="#" onclick="downloadJSON()" style="color:#666;">Download Backup File (iCloud/Local)</a>
+        </div>
+
+        <div id="status" style="margin-top:15px; font-weight:bold; min-height:20px;"></div>
+        <hr style="margin:25px 0; border:0; border-top:1px solid #ccc;">
+        <button class="cloud-btn" style="background:#6c757d" onclick="generatePDF()">Download PDF Report</button>
     </div>
 </div>
 
 <script>
-    // UPDATED CATEGORY LIST
+    // --- 1. CATEGORY MAP ---
     const categories = [
         { val: "", text: "-- Select Category --" },
         { group: "Endovascular", items: [
-            {val: "endo-coil-simple", text: "Aneurysm Coiling (Simple)"},
-            {val: "endo-coil-balloon", text: "Aneurysm Coiling (Balloon Assisted)"},
-            {val: "endo-coil-stent", text: "Aneurysm Coiling (Stent Assisted)"},
-            {val: "endo-flow", text: "Flow Diverter Placement"},
+            {val: "endo-coil-simple", text: "Coiling (Simple)"},
+            {val: "endo-coil-balloon", text: "Coiling (Balloon Asst)"},
+            {val: "endo-coil-stent", text: "Coiling (Stent Asst)"},
+            {val: "endo-flow", text: "Flow Diverter"},
             {val: "endo-avm", text: "AVM Embolization"},
             {val: "endo-tumour", text: "Tumour Embolization"},
-            {val: "endo-stroke", text: "Stroke Thrombolysis/Thrombectomy"},
-            {val: "endo-vaso", text: "Vasospasm Tx (Chem/Balloon)"},
-            {val: "endo-other", text: "Other Endovascular (DSA etc)"}
+            {val: "endo-stroke", text: "Stroke Thrombolysis"},
+            {val: "endo-vaso", text: "Vasospasm Tx"},
+            {val: "endo-other", text: "Other Endo (DSA)"}
         ]},
         { group: "Cerebrovascular Open", items: [
             {val: "cv-clip", text: "Aneurysm Clipping"},
-            {val: "cv-avm-open", text: "AVM Excision (Open)"},
+            {val: "cv-avm-open", text: "AVM Excision"},
             {val: "cv-ich", text: "ICH Evacuation"},
             {val: "cv-bypass", text: "EC-IC Bypass"}
         ]},
@@ -275,142 +297,194 @@
             {val: "tm-glioma", text: "Glioma"},
             {val: "tm-meningioma", text: "Meningioma"},
             {val: "tm-pit", text: "Pituitary"},
-            {val: "tm-cpangle", text: "CP Angle / Acoustic"},
+            {val: "tm-cpangle", text: "CP Angle/Acoustic"},
             {val: "tm-mets", text: "Metastasis"},
             {val: "tm-skullbase", text: "Skull Base"},
-            {val: "tm-pfossa", text: "Posterior Fossa Tumour"}
+            {val: "tm-pfossa", text: "Post Fossa/Intravent"}
         ]},
         { group: "Spine", items: [
-            {val: "sp-acdf", text: "ACDF / Ant Fusion"},
+            {val: "sp-acdf", text: "ACDF / Fusion"},
             {val: "sp-disc", text: "Discectomy"},
             {val: "sp-lam", text: "Laminectomy"},
-            {val: "sp-fusion", text: "Posterior Inst. Fusion"},
+            {val: "sp-fusion", text: "Posterior Fusion"},
             {val: "sp-tumour", text: "Spinal Tumour"},
-            {val: "sp-trauma", text: "Spinal Trauma"},
+            {val: "sp-trauma", text: "Trauma/Stabilization"},
             {val: "sp-cvj", text: "CV Junction"}
         ]},
         { group: "Trauma/Paed/Other", items: [
             {val: "tr-sdh", text: "Subdural (Acute/Chronic)"},
-            {val: "tr-edh", text: "Extradural Haematoma"},
-            {val: "tr-plasty", text: "Cranioplasty / Decompressive"},
+            {val: "tr-edh", text: "Extradural"},
+            {val: "tr-plasty", text: "Cranioplasty/Decomp"},
             {val: "pd-tumour", text: "Paediatric Tumour"},
             {val: "pd-hydro", text: "Hydrocephalus"},
-            {val: "pd-mmc", text: "Dysraphism / MMC"}
+            {val: "pd-mmc", text: "Dysraphism/MMC"}
         ]},
-        { val: "other", text: "Other (No Stats)" }
+        { val: "other", text: "Other (No Count)" }
     ];
 
-    // 1. SETUP
+    // --- 2. SETUP LOGIC ---
     let CLOUD_URL = "";
-    function openSetup() { document.getElementById('setup-modal').style.display = 'flex'; if(localStorage.getItem("logbook_url")) document.getElementById('user-url').value = localStorage.getItem("logbook_url"); }
-    function closeSetup() { document.getElementById('setup-modal').style.display = 'none'; }
-    function checkUrl() { if(localStorage.getItem("logbook_url")) { CLOUD_URL = localStorage.getItem("logbook_url"); document.getElementById('connected-msg').textContent = "✅ Connected"; document.getElementById('connected-msg').style.color="green"; } }
-    function saveUrl() { const url = document.getElementById('user-url').value.trim(); if(!url.startsWith("https://script.google.com")){alert("Invalid URL");return;} localStorage.setItem("logbook_url", url); location.reload(); }
+    function openSetup() { 
+        document.getElementById('setup-modal').style.display='flex'; 
+        if(localStorage.getItem("neuro_lb_url")) document.getElementById('user-url').value = localStorage.getItem("neuro_lb_url"); 
+    }
+    function closeSetup() { document.getElementById('setup-modal').style.display='none'; }
+    
+    function saveUrl() {
+        const u = document.getElementById('user-url').value.trim();
+        if(!u.startsWith("https://script.google.com")) { alert("Invalid URL. It must start with https://script.google.com"); return; }
+        localStorage.setItem("neuro_lb_url", u);
+        location.reload();
+    }
+    
+    function checkUrl() {
+        if(localStorage.getItem("neuro_lb_url")) {
+            CLOUD_URL = localStorage.getItem("neuro_lb_url");
+            document.getElementById('connected-msg').innerHTML = "Status: <span style='color:green'>✅ Connected to your Drive</span>";
+        }
+    }
 
-    // 2. LOGS
-    function getCategoryOptions(sel) {
+    // --- 3. UI GENERATION ---
+    function getCatOpts(sel) {
         return categories.map(c => c.group ? `<optgroup label="${c.group}">${c.items.map(i=>`<option value="${i.val}" ${i.val===sel?'selected':''}>${i.text}</option>`).join('')}</optgroup>` : `<option value="${c.val}" ${c.val===sel?'selected':''}>${c.text}</option>`).join('');
     }
 
-    function addRow(id, data={}) {
-        const tbody = document.querySelector(`#${id} tbody`);
+    function addRow(id, d={}) {
+        const row = document.createElement('tr');
+        // Handle links
+        const preL = d.preop && d.preop.startsWith('http') ? `<a href="${d.preop}" target="_blank" class="img-link">Pre-Op</a>` : '';
+        const postL = d.postop && d.postop.startsWith('http') ? `<a href="${d.postop}" target="_blank" class="img-link">Post-Op</a>` : '';
+
+        row.innerHTML = `
+            <td data-label="Date"><input type="date" class="s-date" value="${d.date||''}"></td>
+            <td data-label="IP"><input type="text" class="s-ip" placeholder="IP" value="${d.ip||''}"></td>
+            <td data-label="Cat"><select class="s-cat" onchange="updateSummary()">${getCatOpts(d.cat)}</select></td>
+            <td data-label="Details"><textarea class="s-dx" placeholder="Dx & Proc">${d.dx||''}</textarea></td>
+            <td data-label="Role"><select class="s-role"><option>Primary</option><option ${d.role==='Assistant'?'selected':''}>Assistant</option><option ${d.role==='Observer'?'selected':''}>Observer</option></select></td>
+            <td data-label="Surg"><input type="text" class="s-surg" placeholder="Name" value="${d.surg||''}"></td>
+            <td data-label="Img" class="img-cell">
+                <input type="file" class="s-preop-f" accept="image/*" title="Pre-Op"><br>
+                <input type="file" class="s-postop-f" accept="image/*" title="Post-Op">
+                <div class="links">${preL} ${postL}</div>
+                <input type="hidden" class="s-preop-u" value="${d.preop||''}"><input type="hidden" class="s-postop-u" value="${d.postop||''}">
+            </td>
+            <td><button class="btn-del" onclick="this.closest('tr').remove();updateSummary()">X</button></td>
+        `;
+        document.querySelector(`#${id} tbody`).appendChild(row);
+    }
+
+    function addAcademicRow(id, ph, d={}) {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td data-label="Date"><input type="date" class="s-date" value="${data.date||''}"></td>
-            <td data-label="IP"><input type="text" class="s-ip" placeholder="IP/Name" value="${data.ip||''}"></td>
-            <td data-label="Cat"><select class="s-cat" onchange="updateSummary()">${getCategoryOptions(data.cat)}</select></td>
-            <td data-label="Dx"><textarea class="s-dx" placeholder="Details">${data.dx||''}</textarea></td>
-            <td data-label="Role"><select class="s-role"><option>Primary</option><option ${data.role==='Assistant'?'selected':''}>Assistant</option><option ${data.role==='Observer'?'selected':''}>Observer</option></select></td>
-            <td data-label="Surg"><input type="text" class="s-surg" placeholder="Surgeon" value="${data.surg||''}"></td>
-            <td><button class="btn-del" onclick="removeRow(this)">X</button></td>
+            <td data-label="Date"><input type="text" class="a-c1" placeholder="${ph[0]}" value="${d.c1||''}"></td>
+            <td data-label="Detail"><textarea class="a-c2" placeholder="${ph[1]}">${d.c2||''}</textarea></td>
+            <td data-label="Info"><input type="text" class="a-c3" placeholder="${ph[2]}" value="${d.c3||''}"></td>
+            <td data-label="Extra"><input type="text" class="a-c4" placeholder="${ph[3]}" value="${d.c4||''}"></td>
+            <td><button class="btn-del" onclick="this.closest('tr').remove()">X</button></td>
         `;
-        tbody.appendChild(row);
-    }
-    
-    function removeRow(btn) { if(confirm("Del?")){btn.closest('tr').remove(); updateSummary();} }
-
-    // 3. ACADEMICS
-    function addAcademicRow(id, placeholders, data={}) {
-        const tbody = document.querySelector(`#${id} tbody`);
-        const row = document.createElement('tr');
-        let tds = `<td><input type="text" class="a-col1" placeholder="${placeholders[0]}" value="${data.col1||''}"></td>`;
-        tds += `<td><textarea class="a-col2" placeholder="${placeholders[1]}">${data.col2||''}</textarea></td>`;
-        tds += `<td><input type="text" class="a-col3" placeholder="${placeholders[2]}" value="${data.col3||''}"></td>`;
-        tds += `<td><input type="text" class="a-col4" placeholder="${placeholders[3]}" value="${data.col4||''}"></td>`;
-        row.innerHTML = tds + `<td><button class="btn-del" onclick="this.closest('tr').remove()">X</button></td>`;
-        tbody.appendChild(row);
+        document.querySelector(`#${id} tbody`).appendChild(row);
     }
 
-    // 4. SUMMARY
     function updateSummary() {
-        document.querySelectorAll('[id^="endo-"], [id^="cv-"], [id^="tm-"], [id^="sp-"], [id^="tr-"], [id^="pd-"]').forEach(i => i.value = 0);
-        document.querySelectorAll('.s-cat').forEach(s => {
+        // Zero out
+        document.querySelectorAll('[id^="endo-"], [id^="cv-"], [id^="tm-"], [id^="sp-"], [id^="tr-"], [id^="pd-"]').forEach(i=>i.value=0);
+        // Count
+        document.querySelectorAll('.s-cat').forEach(s=>{
             const el = document.getElementById(s.value);
-            if(el) el.value = parseInt(el.value) + 1;
+            if(el) el.value = parseInt(el.value)+1;
         });
-        document.querySelectorAll('.summary-table').forEach(t => {
-            let tot=0; t.querySelectorAll('tbody tr:not(.subtotal-row) input').forEach(i=>tot+=Number(i.value)||0);
+        // Subtotals
+        document.querySelectorAll('.summary-table').forEach(t=>{
+            let tot=0; t.querySelectorAll('tbody tr:not(.subtotal-row) input').forEach(i=>tot+=parseInt(i.value)||0);
             t.querySelector('.total-cell').textContent=tot;
         });
     }
 
-    // 5. CLOUD
-    function saveToCloud() {
-        if(!CLOUD_URL){alert("Connect Drive First");openSetup();return;}
-        document.getElementById('status').textContent="Saving...";
-        
-        const logs = {};
-        ['log-endo', 'log-open'].forEach(id => {
-            logs[id] = [];
-            document.querySelectorAll(`#${id} tbody tr`).forEach(r => logs[id].push({
-                date:r.querySelector('.s-date').value, ip:r.querySelector('.s-ip').value, cat:r.querySelector('.s-cat').value,
-                dx:r.querySelector('.s-dx').value, role:r.querySelector('.s-role').value, surg:r.querySelector('.s-surg').value
-            }));
-        });
-        
-        const academics = {};
-        ['log-seminars', 'log-conf', 'log-paper', 'log-pubs'].forEach(id => {
-            academics[id] = [];
-            document.querySelectorAll(`#${id} tbody tr`).forEach(r => academics[id].push({
-                col1:r.querySelector('.a-col1').value, col2:r.querySelector('.a-col2').value, 
-                col3:r.querySelector('.a-col3').value, col4:r.querySelector('.a-col4').value
-            }));
-        });
+    // --- 4. DATA HANDLING ---
+    const toBase64 = f => new Promise((res,rej)=>{const r=new FileReader(); r.readAsDataURL(f); r.onload=()=>res(r.result); r.onerror=e=>rej(e);});
 
-        fetch(CLOUD_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"save", content:{logs, academics}})})
-        .then(()=>{document.getElementById('status').textContent="✅ Saved!"; setTimeout(()=>document.getElementById('status').textContent="",3000);});
+    async function getDataObject() {
+        const logs = {};
+        for (const id of ['log-endo', 'log-open']) {
+            logs[id] = [];
+            const rows = document.querySelectorAll(`#${id} tbody tr`);
+            for (const r of rows) {
+                let pre = r.querySelector('.s-preop-u').value;
+                let post = r.querySelector('.s-postop-u').value;
+                const f1 = r.querySelector('.s-preop-f').files[0];
+                const f2 = r.querySelector('.s-postop-f').files[0];
+                if(f1) pre = await toBase64(f1);
+                if(f2) post = await toBase64(f2);
+
+                logs[id].push({
+                    date: r.querySelector('.s-date').value, ip: r.querySelector('.s-ip').value, cat: r.querySelector('.s-cat').value,
+                    dx: r.querySelector('.s-dx').value, role: r.querySelector('.s-role').value, surg: r.querySelector('.s-surg').value,
+                    preop: pre, postop: post
+                });
+            }
+        }
+        const academics = {};
+        ['log-seminars', 'log-conf', 'log-pubs'].forEach(id=>{
+            academics[id] = [];
+            document.querySelectorAll(`#${id} tbody tr`).forEach(r=>academics[id].push({
+                c1:r.querySelector('.a-c1').value, c2:r.querySelector('.a-c2').value, c3:r.querySelector('.a-c3').value, c4:r.querySelector('.a-c4').value
+            }));
+        });
+        return { logs, academics };
+    }
+
+    async function saveToCloud() {
+        if(!CLOUD_URL){alert("Please click ⚙️ Settings to connect your Drive."); return;}
+        document.getElementById('status').textContent="Compressing Images & Saving...";
+        document.getElementById('status').style.color="blue";
+        
+        try {
+            const content = await getDataObject();
+            await fetch(CLOUD_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"save", content})});
+            document.getElementById('status').textContent="✅ Saved Successfully!";
+            document.getElementById('status').style.color="green";
+            setTimeout(()=>document.getElementById('status').textContent="", 4000);
+        } catch(e) {
+            document.getElementById('status').textContent="❌ Error Saving";
+            document.getElementById('status').style.color="red";
+        }
     }
 
     function loadFromCloud() {
-        if(!CLOUD_URL){alert("Connect Drive First");openSetup();return;}
+        if(!CLOUD_URL){alert("Please click ⚙️ Settings to connect your Drive."); return;}
         document.getElementById('status').textContent="Loading...";
-        fetch(CLOUD_URL + "?action=get").then(r=>r.json()).then(res=>{
+        fetch(CLOUD_URL+"?action=get").then(r=>r.json()).then(res=>{
             if(res.status==="success"){
-                const d = res.data;
-                ['log-endo', 'log-open'].forEach(id => {
+                ['log-endo', 'log-open'].forEach(id=>{
                     document.querySelector(`#${id} tbody`).innerHTML="";
-                    if(d.logs && d.logs[id]) d.logs[id].forEach(r=>addRow(id,r));
+                    if(res.data.logs && res.data.logs[id]) res.data.logs[id].forEach(d=>addRow(id, d));
                 });
-                ['log-seminars', 'log-conf', 'log-paper', 'log-pubs'].forEach(id => {
-                     document.querySelector(`#${id} tbody`).innerHTML="";
-                     if(d.academics && d.academics[id]) d.academics[id].forEach(r=>addAcademicRow(id, [], r)); // placeholders ignored on load
+                ['log-seminars', 'log-conf', 'log-pubs'].forEach(id=>{
+                    document.querySelector(`#${id} tbody`).innerHTML="";
+                    if(res.data.academics && res.data.academics[id]) res.data.academics[id].forEach(d=>addAcademicRow(id, [], d));
                 });
                 updateSummary();
                 document.getElementById('status').textContent="✅ Loaded!";
-            }
+            } else { document.getElementById('status').textContent="⚠️ No Data"; }
         });
     }
 
-    function openTab(id){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');event.currentTarget.classList.add('active');}
-    function generatePDF(){const el=document.getElementById('logbook-content');document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('show-for-pdf'));document.body.classList.add('pdf-mode');document.querySelectorAll('textarea').forEach(t=>t.style.height=(t.scrollHeight+5)+"px");html2pdf().from(el).save('Logbook.pdf').then(()=>{document.body.classList.remove('pdf-mode');document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('show-for-pdf'));document.querySelector('.tab-content.active').classList.add('show-for-pdf');});}
+    // Local Backup (iCloud friendly)
+    async function downloadJSON() {
+        const data = await getDataObject();
+        const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = "logbook_backup.json";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
 
-    window.onload = function() {
+    function openTab(id){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');event.currentTarget.classList.add('active');}
+    function generatePDF(){const el=document.getElementById('logbook-content');document.body.classList.add('pdf-mode');document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('show-for-pdf'));document.querySelectorAll('textarea').forEach(t=>t.style.height=(t.scrollHeight+5)+"px");html2pdf().from(el).save('Logbook.pdf').then(()=>{document.body.classList.remove('pdf-mode');document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('show-for-pdf'));document.querySelector('.tab-content.active').classList.add('show-for-pdf');});}
+
+    window.onload = function(){
         checkUrl();
-        ['log-endo', 'log-open'].forEach(id=>{if(!document.querySelector(`#${id} tbody tr`)) addRow(id)});
-        if(!document.querySelector(`#log-seminars tbody tr`)) addAcademicRow('log-seminars', ['Date','Topic','Type','Faculty']);
-        if(!document.querySelector(`#log-conf tbody tr`)) addAcademicRow('log-conf', ['Date','Name','Location','Role']);
-        if(!document.querySelector(`#log-paper tbody tr`)) addAcademicRow('log-paper', ['Date','Title','Conference','Award']);
-        if(!document.querySelector(`#log-pubs tbody tr`)) addAcademicRow('log-pubs', ['Year','Title','Journal','Status']);
+        ['log-endo', 'log-open'].forEach(id=>{ if(!document.querySelector(`#${id} tbody tr`)) addRow(id); });
+        if(!document.querySelector('#log-seminars tbody tr')) addAcademicRow('log-seminars', ['Date','Topic','Type','Faculty']);
     }
 </script>
 </body>
