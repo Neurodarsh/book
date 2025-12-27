@@ -3,236 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Neurosurgery Logbook</title>
+    <title>Advanced Neurosurgery Logbook</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         /* BASE STYLES */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 10px; font-size: 14px; }
-        .container { width: 100%; max-width: 1200px; margin: 0 auto; background: white; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 10px; font-size: 13px; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; background: white; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box; position: relative; }
         
         /* HEADER */
-        .college-header { text-align: center; border-bottom: 3px solid #b30000; padding-bottom: 15px; margin-bottom: 20px; }
-        .college-header h1 { margin: 0; color: #b30000; font-size: 1.2rem; text-transform: uppercase; }
+        .college-header { text-align: center; border-bottom: 3px solid #003366; padding-bottom: 15px; margin-bottom: 20px; }
+        .college-header h1 { margin: 0; color: #003366; font-size: 1.4rem; text-transform: uppercase; }
         .college-header h2 { margin: 5px 0; color: #333; font-size: 1rem; }
-        
-        /* SETUP BOX */
-        .setup-container { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .setup-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .setup-content { display: none; margin-top: 10px; border-top: 1px solid #e6dbb9; padding-top: 10px; font-size: 0.9em; }
-        .setup-input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
-        .btn-connect { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
-        .instructions ol { padding-left: 20px; line-height: 1.6; }
+        .settings-btn { position: absolute; top: 15px; right: 15px; background: #eee; border: 1px solid #ccc; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem; }
+
+        /* SETUP MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .setup-input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-connect { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
 
         /* TABS */
-        .tab-buttons { display: flex; overflow-x: auto; gap: 5px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid #ddd; }
-        .tab-btn { padding: 10px 20px; background: #eee; border: none; border-radius: 5px 5px 0 0; font-weight: bold; white-space: nowrap; cursor: pointer; }
-        .tab-btn.active { background: #b30000; color: white; }
+        .tab-buttons { display: flex; overflow-x: auto; gap: 5px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #ddd; }
+        .tab-btn { padding: 10px 20px; background: #eee; border: none; border-radius: 5px 5px 0 0; font-weight: bold; white-space: nowrap; cursor: pointer; color: #555; }
+        .tab-btn.active { background: #003366; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         /* SECTIONS & TABLES */
-        h2.section-title { background-color: #fff0f0; padding: 10px; border-left: 5px solid #b30000; margin-top: 25px; font-size: 1.1rem; color: #b30000; }
-        h3 { color: #555; margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 1rem; }
+        h2.section-title { background-color: #e6f0ff; padding: 8px; border-left: 5px solid #003366; margin-top: 20px; font-size: 1rem; color: #003366; font-weight: bold; }
+        h3 { color: #555; margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 3px; font-size: 0.9rem; font-weight: bold; }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; }
-        th { background-color: #f8f8f8; font-weight: bold; color: #444; }
-        input, textarea, select { font-size: 13px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        textarea { resize: vertical; min-height: 35px; }
-
-        /* SUMMARY & LOG SPECIFICS */
-        .summary-table td:last-child { width: 60px; text-align: center; }
-        .summary-table input { text-align: center; font-weight: bold; background: #f9f9f9; border: none; }
-        .subtotal-row { background-color: #444; color: white; font-weight: bold; }
-        .subtotal-row td { color: white; }
+        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; vertical-align: middle; }
+        th { background-color: #f0f0f0; font-weight: bold; color: #333; }
         
-        .btn-add { background: #008CBA; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
+        /* INPUTS */
+        input, textarea, select { font-size: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        textarea { resize: vertical; min-height: 30px; }
+        select { background: white; }
+
+        /* SUMMARY SPECIFIC */
+        .summary-table td:last-child { width: 60px; text-align: center; }
+        .summary-table input { text-align: center; font-weight: bold; background: #fff; border: 1px solid #eee; }
+        .subtotal-row { background-color: #333; color: white; font-weight: bold; }
+        .subtotal-row td { color: white; }
+
+        /* LOG SPECIFIC */
+        .log-table th { white-space: nowrap; }
+        .btn-add { background: #003366; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; font-weight: bold; font-size: 0.85rem; }
         .btn-del { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
 
         /* CLOUD ACTIONS */
-        .cloud-actions { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; border: 1px solid #2196F3; display: none; }
-        .cloud-btn { padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; width: 100%; max-width: 200px; color: white; }
+        .cloud-actions { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; border: 1px solid #2196F3; }
+        .cloud-btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 5px; width: 100%; max-width: 180px; color: white; }
         
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .log-table thead { display: none; }
             .log-table tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
             .log-table td { display: block; border: none; padding: 5px 0; }
-            .log-table td::before { content: attr(data-label); font-weight: bold; display: block; color: #999; font-size: 0.8em; }
+            .log-table td::before { content: attr(data-label); font-weight: bold; display: block; color: #999; font-size: 0.8em; margin-bottom: 2px; }
         }
 
         /* PDF MODE */
         .show-for-pdf { display: block !important; }
-        .pdf-mode .tab-buttons, .pdf-mode .cloud-actions, .pdf-mode .setup-container, .pdf-mode .btn-add, .pdf-mode .btn-del { display: none !important; }
+        .pdf-mode .tab-buttons, .pdf-mode .cloud-actions, .pdf-mode .settings-btn, .pdf-mode .btn-add, .pdf-mode .btn-del { display: none !important; }
         .pdf-mode input, .pdf-mode textarea, .pdf-mode select { border: none !important; background: transparent !important; padding: 0; appearance: none; }
     </style>
 </head>
 <body>
 
 <div class="container" id="logbook-content">
+    <button class="settings-btn" onclick="openSetup()" title="Cloud Settings">⚙️</button>
+    
     <div class="college-header">
         <h1>Goa Medical College</h1>
         <h2>Department of Neurosurgery</h2>
-        <p>MCh Logbook (Cloud Sync Edition)</p>
+        <p>MCh Logbook (Advanced)</p>
     </div>
 
-    <div class="setup-container" id="setup-box" data-html2canvas-ignore="true">
-        <div class="setup-header" onclick="toggleSetup()">
-            <strong>⚙️ Click here to Connect YOUR Google Drive</strong>
-            <span>▼</span>
-        </div>
-        <div class="setup-content" id="setup-steps">
-            <div class="instructions">
-                <strong>One-Time Setup Instructions:</strong>
-                <ol>
-                    <li>Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> and create a new sheet named "Logbook DB".</li>
-                    <li>Rename the first tab at the bottom to <code>Logs</code>.</li>
-                    <li>Click <strong>Extensions > Apps Script</strong>.</li>
-                    <li>Delete any code and paste the code block below.</li>
-                    <li>Click <strong>Deploy > New Deployment</strong>. Select type: <strong>Web App</strong>.</li>
-                    <li>Set <em>Who has access</em> to <strong>Anyone</strong>. Click Deploy.</li>
-                    <li>Copy the <strong>Web App URL</strong> and paste it below.</li>
-                </ol>
-            </div>
-            <textarea style="height:60px; font-family:monospace; font-size:0.8em; margin-bottom:10px;" readonly onclick="this.select()">
-function doPost(e){try{var d=JSON.parse(e.postData.contents);var s=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Logs");if(d.action=="save"){s.clear();s.getRange(1,1).setValue(JSON.stringify(d.content));return ContentService.createTextOutput(JSON.stringify({status:"success"}));}}catch(e){return ContentService.createTextOutput(JSON.stringify({status:"error",error:e.toString()}));}}
-function doGet(e){try{var s=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Logs");var d=s.getRange(1,1).getValue();return ContentService.createTextOutput(JSON.stringify({status:"success",data:JSON.parse(d)}));}catch(e){return ContentService.createTextOutput(JSON.stringify({status:"error"}));}}
-            </textarea>
-            <input type="text" id="user-url" class="setup-input" placeholder="Paste Web App URL here (starts with https://script.google.com...)">
-            <button class="btn-connect" onclick="saveUrl()">Connect My Drive</button>
+    <div class="modal-overlay" id="setup-modal">
+        <div class="modal-box">
+            <h3>⚙️ Connect Google Drive</h3>
+            <p>Paste your Google Apps Script Web App URL below:</p>
+            <input type="text" id="user-url" class="setup-input" placeholder="https://script.google.com/macros/s/..../exec">
+            <button class="btn-connect" onclick="saveUrl()">Save & Connect</button>
+            <button onclick="closeSetup()" style="margin-top:10px; background:none; border:none; color:#666; cursor:pointer; width:100%">Cancel</button>
         </div>
     </div>
 
     <div class="tab-buttons" data-html2canvas-ignore="true">
         <button class="tab-btn active" onclick="openTab('summary')">1. Auto-Summary</button>
-        <button class="tab-btn" onclick="openTab('logs')">2. Operative Logs</button>
+        <button class="tab-btn" onclick="openTab('logs')">2. Daily Logs</button>
         <button class="tab-btn" onclick="openTab('academics')">3. Academics</button>
     </div>
 
     <div id="summary" class="tab-content active">
         <p style="background:#e3f2fd; padding:10px; border-radius:5px; font-size:0.9em;">
-            <strong>ℹ️ Live Stats:</strong> These numbers update automatically as you add cases to Tab 2.
+            <strong>ℹ️ Auto-Update:</strong> Add cases in "Daily Logs" to update these numbers automatically.
         </p>
 
-        <h2 class="section-title">A. Adult Procedures</h2>
-        
-        <h3>1. Cerebrovascular</h3>
+        <h2 class="section-title">A. Endovascular & Cerebrovascular</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
             <tbody>
-                <tr><td>Aneurysm Clip (Ant Circ)</td><td><input readonly id="sum-aneurysm-ant" value="0"></td></tr>
-                <tr><td>Aneurysm Clip (Post Circ)</td><td><input readonly id="sum-aneurysm-post" value="0"></td></tr>
-                <tr><td>AVM Excision</td><td><input readonly id="sum-avm" value="0"></td></tr>
-                <tr><td>Carotid Endarterectomy</td><td><input readonly id="sum-cea" value="0"></td></tr>
-                <tr><td>EC-IC Bypass / Moya Moya</td><td><input readonly id="sum-bypass" value="0"></td></tr>
-                <tr><td>Endovascular Procedure</td><td><input readonly id="sum-endo" value="0"></td></tr>
-                <tr><td>ICH Evacuation</td><td><input readonly id="sum-ich" value="0"></td></tr>
-                <tr class="subtotal-row"><td>Subtotal</td><td class="total-cell">0</td></tr>
+                <tr><td>Aneurysm Coiling (Simple)</td><td><input readonly id="endo-coil-simple" value="0"></td></tr>
+                <tr><td>Aneurysm Coiling (Balloon Assisted)</td><td><input readonly id="endo-coil-balloon" value="0"></td></tr>
+                <tr><td>Aneurysm Coiling (Stent Assisted)</td><td><input readonly id="endo-coil-stent" value="0"></td></tr>
+                <tr><td>Flow Diverter Placement</td><td><input readonly id="endo-flow" value="0"></td></tr>
+                <tr><td>AVM Embolization</td><td><input readonly id="endo-avm" value="0"></td></tr>
+                <tr><td>Tumour Embolization</td><td><input readonly id="endo-tumour" value="0"></td></tr>
+                <tr><td>Stroke Thrombolysis / Thrombectomy</td><td><input readonly id="endo-stroke" value="0"></td></tr>
+                <tr><td>Vasospasm Treatment (Chemical/Balloon)</td><td><input readonly id="endo-vaso" value="0"></td></tr>
+                <tr><td>Other Endovascular (DSA only etc.)</td><td><input readonly id="endo-other" value="0"></td></tr>
+                
+                <tr><td>Aneurysm Clipping (Open)</td><td><input readonly id="cv-clip" value="0"></td></tr>
+                <tr><td>AVM Excision (Open)</td><td><input readonly id="cv-avm-open" value="0"></td></tr>
+                <tr><td>ICH Evacuation</td><td><input readonly id="cv-ich" value="0"></td></tr>
+                <tr><td>EC-IC Bypass</td><td><input readonly id="cv-bypass" value="0"></td></tr>
+                <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
 
-        <h3>2. Tumour (Cranial)</h3>
+        <h2 class="section-title">B. Tumour (Cranial)</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
             <tbody>
-                <tr><td>Glioma: Low Grade</td><td><input readonly id="sum-glioma-low" value="0"></td></tr>
-                <tr><td>Glioma: High Grade</td><td><input readonly id="sum-glioma-high" value="0"></td></tr>
-                <tr><td>Meningioma</td><td><input readonly id="sum-meningioma" value="0"></td></tr>
-                <tr><td>Pituitary (Trans-Sphenoidal/Cranial)</td><td><input readonly id="sum-pituitary" value="0"></td></tr>
-                <tr><td>CP Angle / Acoustic</td><td><input readonly id="sum-cpangle" value="0"></td></tr>
-                <tr><td>Metastasis</td><td><input readonly id="sum-mets" value="0"></td></tr>
-                <tr><td>Skull Base Approach</td><td><input readonly id="sum-skullbase" value="0"></td></tr>
-                <tr class="subtotal-row"><td>Subtotal</td><td class="total-cell">0</td></tr>
+                <tr><td>Glioma: Low/High Grade</td><td><input readonly id="tm-glioma" value="0"></td></tr>
+                <tr><td>Meningioma</td><td><input readonly id="tm-meningioma" value="0"></td></tr>
+                <tr><td>Pituitary (Trans-Sphenoidal/Cranial)</td><td><input readonly id="tm-pit" value="0"></td></tr>
+                <tr><td>CP Angle / Acoustic</td><td><input readonly id="tm-cpangle" value="0"></td></tr>
+                <tr><td>Metastasis</td><td><input readonly id="tm-mets" value="0"></td></tr>
+                <tr><td>Skull Base Approach</td><td><input readonly id="tm-skullbase" value="0"></td></tr>
+                <tr><td>Posterior Fossa Tumour</td><td><input readonly id="tm-pfossa" value="0"></td></tr>
+                <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
 
-        <h3>3. Spine</h3>
+        <h2 class="section-title">C. Spine</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
             <tbody>
-                <tr><td>Discectomy (Cervical/Lumbar)</td><td><input readonly id="sum-disc" value="0"></td></tr>
-                <tr><td>Laminectomy / Decompression</td><td><input readonly id="sum-laminectomy" value="0"></td></tr>
-                <tr><td>Spinal Fusion (Instru.)</td><td><input readonly id="sum-fusion" value="0"></td></tr>
-                <tr><td>Spinal Tumour (Extra/Intradural)</td><td><input readonly id="sum-spine-tumour" value="0"></td></tr>
-                <tr><td>Spinal Trauma</td><td><input readonly id="sum-spine-trauma" value="0"></td></tr>
-                <tr><td>CV Junction</td><td><input readonly id="sum-cvj" value="0"></td></tr>
-                <tr class="subtotal-row"><td>Subtotal</td><td class="total-cell">0</td></tr>
+                <tr><td>ACDF / Cervical Fusion</td><td><input readonly id="sp-acdf" value="0"></td></tr>
+                <tr><td>Discectomy (Cervical/Lumbar)</td><td><input readonly id="sp-disc" value="0"></td></tr>
+                <tr><td>Laminectomy / Decompression</td><td><input readonly id="sp-lam" value="0"></td></tr>
+                <tr><td>Posterior Instrumented Fusion</td><td><input readonly id="sp-fusion" value="0"></td></tr>
+                <tr><td>Spinal Tumour</td><td><input readonly id="sp-tumour" value="0"></td></tr>
+                <tr><td>Spinal Trauma</td><td><input readonly id="sp-trauma" value="0"></td></tr>
+                <tr><td>CV Junction</td><td><input readonly id="sp-cvj" value="0"></td></tr>
+                <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
 
-        <h3>4. Trauma & Other</h3>
+        <h2 class="section-title">D. Trauma & Paediatric</h2>
         <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
+            <thead><tr><th>Procedure</th><th>Total</th></tr></thead>
             <tbody>
-                <tr><td>Acute Subdural (Craniotomy)</td><td><input readonly id="sum-sdh" value="0"></td></tr>
-                <tr><td>Chronic Subdural (Burr Hole)</td><td><input readonly id="sum-csdh" value="0"></td></tr>
-                <tr><td>Extradural Haematoma</td><td><input readonly id="sum-edh" value="0"></td></tr>
-                <tr><td>Cranioplasty</td><td><input readonly id="sum-cranioplasty" value="0"></td></tr>
-                <tr><td>VP Shunt / ETV</td><td><input readonly id="sum-shunt" value="0"></td></tr>
-                <tr class="subtotal-row"><td>Subtotal</td><td class="total-cell">0</td></tr>
-            </tbody>
-        </table>
-
-        <h2 class="section-title">B. Paediatric</h2>
-        <table class="summary-table">
-            <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
-            <tbody>
-                <tr><td>Paediatric Tumour</td><td><input readonly id="sum-paed-tumour" value="0"></td></tr>
-                <tr><td>Hydrocephalus</td><td><input readonly id="sum-paed-hydro" value="0"></td></tr>
-                <tr><td>Dysraphism / MMC</td><td><input readonly id="sum-paed-mmc" value="0"></td></tr>
-                <tr class="subtotal-row"><td>Subtotal</td><td class="total-cell">0</td></tr>
+                <tr><td>Acute/Chronic Subdural</td><td><input readonly id="tr-sdh" value="0"></td></tr>
+                <tr><td>Extradural Haematoma</td><td><input readonly id="tr-edh" value="0"></td></tr>
+                <tr><td>Cranioplasty / Decompressive</td><td><input readonly id="tr-plasty" value="0"></td></tr>
+                <tr><td>Paediatric Tumour</td><td><input readonly id="pd-tumour" value="0"></td></tr>
+                <tr><td>Hydrocephalus (Shunt/ETV)</td><td><input readonly id="pd-hydro" value="0"></td></tr>
+                <tr><td>Dysraphism / MMC</td><td><input readonly id="pd-mmc" value="0"></td></tr>
+                <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
     </div>
 
     <div id="logs" class="tab-content">
-        
-        <h2 class="section-title">Emergency Log</h2>
-        <button class="btn-add" onclick="addRow('log-emergency')">+ Add Case</button>
-        <table class="log-table" id="log-emergency">
+        <h2 class="section-title">Endovascular Log</h2>
+        <button class="btn-add" onclick="addRow('log-endo')">+ Add Endo Case</button>
+        <table class="log-table" id="log-endo">
             <thead>
                 <tr>
                     <th style="width:10%">Date</th>
-                    <th style="width:15%">IP/Name</th>
-                    <th style="width:20%">Category (Auto-Stats)</th>
-                    <th>Diagnosis & Procedure</th>
-                    <th style="width:12%">Surgeon</th>
-                    <th style="width:12%">Assistant</th>
+                    <th style="width:12%">IP/Name</th>
+                    <th style="width:25%">Category (Auto-Stats)</th>
+                    <th>Dx & Procedure Details</th>
+                    <th style="width:10%">Role</th>
+                    <th style="width:10%">Surgeon</th>
                     <th style="width:5%">Del</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
 
-        <h2 class="section-title">Routine Log</h2>
-        <button class="btn-add" onclick="addRow('log-routine')">+ Add Case</button>
-        <table class="log-table" id="log-routine">
+        <h2 class="section-title">Operative Log (Open Cases)</h2>
+        <button class="btn-add" onclick="addRow('log-open')">+ Add Open Case</button>
+        <table class="log-table" id="log-open">
             <thead>
                 <tr>
                     <th style="width:10%">Date</th>
-                    <th style="width:15%">IP/Name</th>
-                    <th style="width:20%">Category (Auto-Stats)</th>
-                    <th>Diagnosis & Procedure</th>
-                    <th style="width:12%">Surgeon</th>
-                    <th style="width:12%">Assistant</th>
-                    <th style="width:5%">Del</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        
-        <h2 class="section-title">Endovascular Log</h2>
-        <button class="btn-add" onclick="addRow('log-endo')">+ Add Case</button>
-        <table class="log-table" id="log-endo">
-            <thead>
-                <tr>
-                    <th style="width:10%">Date</th>
-                    <th style="width:15%">IP/Name</th>
-                    <th style="width:20%">Category (Auto-Stats)</th>
-                    <th>Diagnosis & Procedure</th>
-                    <th style="width:12%">Surgeon</th>
-                    <th style="width:12%">Assistant</th>
+                    <th style="width:12%">IP/Name</th>
+                    <th style="width:25%">Category (Auto-Stats)</th>
+                    <th>Dx & Procedure Details</th>
+                    <th style="width:10%">Role</th>
+                    <th style="width:10%">Surgeon</th>
                     <th style="width:5%">Del</th>
                 </tr>
             </thead>
@@ -241,29 +208,42 @@ function doGet(e){try{var s=SpreadsheetApp.getActiveSpreadsheet().getSheetByName
     </div>
 
     <div id="academics" class="tab-content">
-        <h2 class="section-title">Academic Activities</h2>
-        <button class="btn-add" onclick="addAcademicRow()">+ Add Activity</button>
-        <table class="log-table" id="log-academics">
-            <thead>
-                <tr>
-                    <th style="width:15%">Date</th>
-                    <th>Topic</th>
-                    <th style="width:20%">Type</th>
-                    <th style="width:20%">Faculty/Moderator</th>
-                    <th style="width:5%">Del</th>
-                </tr>
-            </thead>
+        
+        <h2 class="section-title">Seminars / Journal Club / Case Presentations</h2>
+        <button class="btn-add" onclick="addAcademicRow('log-seminars', ['Date','Topic','Type','Faculty'])">+ Add Activity</button>
+        <table class="log-table" id="log-seminars">
+            <thead><tr><th style="width:15%">Date</th><th>Topic</th><th style="width:15%">Type</th><th style="width:20%">Faculty</th><th style="width:5%">Del</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h2 class="section-title">Workshops & Conferences</h2>
+        <button class="btn-add" onclick="addAcademicRow('log-conf', ['Date','Conference/Workshop Name','Location','Role (Delegate/Presenter)'])">+ Add Conference</button>
+        <table class="log-table" id="log-conf">
+            <thead><tr><th style="width:15%">Date</th><th>Conference/Workshop Name</th><th style="width:20%">Location</th><th style="width:20%">Role</th><th style="width:5%">Del</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h2 class="section-title">Paper Presentations</h2>
+        <button class="btn-add" onclick="addAcademicRow('log-paper', ['Date','Title of Paper','Conference','Award (if any)'])">+ Add Paper</button>
+        <table class="log-table" id="log-paper">
+            <thead><tr><th style="width:15%">Date</th><th>Title of Paper</th><th style="width:20%">Conference</th><th style="width:20%">Award</th><th style="width:5%">Del</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h2 class="section-title">Publications</h2>
+        <button class="btn-add" onclick="addAcademicRow('log-pubs', ['Year','Title','Journal','Status (Submitted/Published)'])">+ Add Publication</button>
+        <table class="log-table" id="log-pubs">
+            <thead><tr><th style="width:15%">Year</th><th>Title</th><th style="width:20%">Journal</th><th style="width:20%">Status</th><th style="width:5%">Del</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
 
     <div class="cloud-actions" id="cloud-actions" data-html2canvas-ignore="true">
-        <h3>☁️ Cloud Sync Active</h3>
-        <p id="connected-msg" style="font-size:0.9em; color:#0056b3; margin-bottom:15px"></p>
-        <button class="cloud-btn" style="background:#2196F3" onclick="saveToCloud()">⬆ Save Data</button>
-        <button class="cloud-btn" style="background:#673AB7" onclick="loadFromCloud()">⬇ Load Data</button>
+        <h3>☁️ Cloud Sync</h3>
+        <p id="connected-msg" style="font-size:0.9em; color:#0056b3; margin-bottom:15px">Not connected. Click ⚙️ to setup.</p>
+        <button class="cloud-btn" style="background:#28a745" onclick="saveToCloud()">⬆ Save Data</button>
+        <button class="cloud-btn" style="background:#007bff" onclick="loadFromCloud()">⬇ Load Data</button>
         <br>
-        <button class="cloud-btn" style="background:#999; font-size:0.8em; padding:5px 10px; min-width:auto; margin-top:15px;" onclick="resetUrl()">Disconnect</button>
         <div id="status" style="margin-top:10px; font-weight:bold; height:20px;"></div>
         <hr style="margin:20px 0; border:0; border-top:1px solid #ddd;">
         <button class="cloud-btn" style="background:#555" onclick="generatePDF()">Download PDF</button>
@@ -271,240 +251,166 @@ function doGet(e){try{var s=SpreadsheetApp.getActiveSpreadsheet().getSheetByName
 </div>
 
 <script>
-    // CATEGORY MAPPING
+    // UPDATED CATEGORY LIST
     const categories = [
         { val: "", text: "-- Select Category --" },
-        { group: "Cerebrovascular", items: [
-            {val: "sum-aneurysm-ant", text: "Aneurysm (Ant Circ)"},
-            {val: "sum-aneurysm-post", text: "Aneurysm (Post Circ)"},
-            {val: "sum-avm", text: "AVM Excision"},
-            {val: "sum-cea", text: "Carotid Endarterectomy"},
-            {val: "sum-bypass", text: "EC-IC Bypass"},
-            {val: "sum-endo", text: "Endovascular"},
-            {val: "sum-ich", text: "ICH Evacuation"}
+        { group: "Endovascular", items: [
+            {val: "endo-coil-simple", text: "Aneurysm Coiling (Simple)"},
+            {val: "endo-coil-balloon", text: "Aneurysm Coiling (Balloon Assisted)"},
+            {val: "endo-coil-stent", text: "Aneurysm Coiling (Stent Assisted)"},
+            {val: "endo-flow", text: "Flow Diverter Placement"},
+            {val: "endo-avm", text: "AVM Embolization"},
+            {val: "endo-tumour", text: "Tumour Embolization"},
+            {val: "endo-stroke", text: "Stroke Thrombolysis/Thrombectomy"},
+            {val: "endo-vaso", text: "Vasospasm Tx (Chem/Balloon)"},
+            {val: "endo-other", text: "Other Endovascular (DSA etc)"}
+        ]},
+        { group: "Cerebrovascular Open", items: [
+            {val: "cv-clip", text: "Aneurysm Clipping"},
+            {val: "cv-avm-open", text: "AVM Excision (Open)"},
+            {val: "cv-ich", text: "ICH Evacuation"},
+            {val: "cv-bypass", text: "EC-IC Bypass"}
         ]},
         { group: "Tumour", items: [
-            {val: "sum-glioma-low", text: "Glioma (Low Grade)"},
-            {val: "sum-glioma-high", text: "Glioma (High Grade)"},
-            {val: "sum-meningioma", text: "Meningioma"},
-            {val: "sum-pituitary", text: "Pituitary"},
-            {val: "sum-cpangle", text: "CP Angle / Acoustic"},
-            {val: "sum-mets", text: "Metastasis"},
-            {val: "sum-skullbase", text: "Skull Base"}
+            {val: "tm-glioma", text: "Glioma"},
+            {val: "tm-meningioma", text: "Meningioma"},
+            {val: "tm-pit", text: "Pituitary"},
+            {val: "tm-cpangle", text: "CP Angle / Acoustic"},
+            {val: "tm-mets", text: "Metastasis"},
+            {val: "tm-skullbase", text: "Skull Base"},
+            {val: "tm-pfossa", text: "Posterior Fossa Tumour"}
         ]},
         { group: "Spine", items: [
-            {val: "sum-disc", text: "Discectomy"},
-            {val: "sum-laminectomy", text: "Laminectomy"},
-            {val: "sum-fusion", text: "Spinal Fusion"},
-            {val: "sum-spine-tumour", text: "Spinal Tumour"},
-            {val: "sum-spine-trauma", text: "Spinal Trauma"},
-            {val: "sum-cvj", text: "CV Junction"}
+            {val: "sp-acdf", text: "ACDF / Ant Fusion"},
+            {val: "sp-disc", text: "Discectomy"},
+            {val: "sp-lam", text: "Laminectomy"},
+            {val: "sp-fusion", text: "Posterior Inst. Fusion"},
+            {val: "sp-tumour", text: "Spinal Tumour"},
+            {val: "sp-trauma", text: "Spinal Trauma"},
+            {val: "sp-cvj", text: "CV Junction"}
         ]},
-        { group: "Trauma/Other", items: [
-            {val: "sum-sdh", text: "Acute SDH"},
-            {val: "sum-csdh", text: "Chronic SDH"},
-            {val: "sum-edh", text: "Extradural Haematoma"},
-            {val: "sum-cranioplasty", text: "Cranioplasty"},
-            {val: "sum-shunt", text: "VP Shunt / ETV"}
-        ]},
-        { group: "Paediatric", items: [
-            {val: "sum-paed-tumour", text: "Paediatric Tumour"},
-            {val: "sum-paed-hydro", text: "Hydrocephalus"},
-            {val: "sum-paed-mmc", text: "Dysraphism / MMC"}
+        { group: "Trauma/Paed/Other", items: [
+            {val: "tr-sdh", text: "Subdural (Acute/Chronic)"},
+            {val: "tr-edh", text: "Extradural Haematoma"},
+            {val: "tr-plasty", text: "Cranioplasty / Decompressive"},
+            {val: "pd-tumour", text: "Paediatric Tumour"},
+            {val: "pd-hydro", text: "Hydrocephalus"},
+            {val: "pd-mmc", text: "Dysraphism / MMC"}
         ]},
         { val: "other", text: "Other (No Stats)" }
     ];
 
-    // 1. SETUP LOGIC
+    // 1. SETUP
     let CLOUD_URL = "";
+    function openSetup() { document.getElementById('setup-modal').style.display = 'flex'; if(localStorage.getItem("logbook_url")) document.getElementById('user-url').value = localStorage.getItem("logbook_url"); }
+    function closeSetup() { document.getElementById('setup-modal').style.display = 'none'; }
+    function checkUrl() { if(localStorage.getItem("logbook_url")) { CLOUD_URL = localStorage.getItem("logbook_url"); document.getElementById('connected-msg').textContent = "✅ Connected"; document.getElementById('connected-msg').style.color="green"; } }
+    function saveUrl() { const url = document.getElementById('user-url').value.trim(); if(!url.startsWith("https://script.google.com")){alert("Invalid URL");return;} localStorage.setItem("logbook_url", url); location.reload(); }
 
-    function toggleSetup() {
-        const content = document.getElementById('setup-steps');
-        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    // 2. LOGS
+    function getCategoryOptions(sel) {
+        return categories.map(c => c.group ? `<optgroup label="${c.group}">${c.items.map(i=>`<option value="${i.val}" ${i.val===sel?'selected':''}>${i.text}</option>`).join('')}</optgroup>` : `<option value="${c.val}" ${c.val===sel?'selected':''}>${c.text}</option>`).join('');
     }
 
-    function checkUrl() {
-        const storedUrl = localStorage.getItem("logbook_url");
-        if(storedUrl) {
-            CLOUD_URL = storedUrl;
-            document.getElementById('setup-box').style.display = 'none';
-            document.getElementById('cloud-actions').style.display = 'block';
-            document.getElementById('connected-msg').textContent = "Connected to Drive";
-        }
-    }
-
-    function saveUrl() {
-        const input = document.getElementById('user-url').value.trim();
-        if(!input.startsWith("https://script.google.com")) {
-            alert("Invalid URL. It must start with 'https://script.google.com'");
-            return;
-        }
-        localStorage.setItem("logbook_url", input);
-        location.reload();
-    }
-
-    function resetUrl() {
-        if(confirm("Disconnect your Google Drive?")) {
-            localStorage.removeItem("logbook_url");
-            location.reload();
-        }
-    }
-
-    // 2. TABLE LOGIC
-    function getCategoryOptions(selectedVal) {
-        let options = '';
-        categories.forEach(cat => {
-            if (cat.group) {
-                options += `<optgroup label="${cat.group}">`;
-                cat.items.forEach(item => {
-                    const selected = item.val === selectedVal ? 'selected' : '';
-                    options += `<option value="${item.val}" ${selected}>${item.text}</option>`;
-                });
-                options += `</optgroup>`;
-            } else {
-                const selected = cat.val === selectedVal ? 'selected' : '';
-                options += `<option value="${cat.val}" ${selected}>${cat.text}</option>`;
-            }
-        });
-        return options;
-    }
-
-    function addRow(tableId, data = {}) {
-        const tbody = document.querySelector(`#${tableId} tbody`);
+    function addRow(id, data={}) {
+        const tbody = document.querySelector(`#${id} tbody`);
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td data-label="Date"><input type="date" class="s-date" value="${data.date || ''}"></td>
-            <td data-label="IP/Name"><input type="text" class="s-ip" placeholder="Name/IP" value="${data.ip || ''}"></td>
-            <td data-label="Category"><select class="s-cat" onchange="updateSummaryFromLogs()">${getCategoryOptions(data.cat)}</select></td>
-            <td data-label="Diagnosis"><textarea class="s-dx" placeholder="Details...">${data.dx || ''}</textarea></td>
-            <td data-label="Surgeon"><input type="text" class="s-surg" placeholder="Surgeon" value="${data.surg || ''}"></td>
-            <td data-label="Assistant"><input type="text" class="s-asst" placeholder="Assistant" value="${data.asst || ''}"></td>
+            <td data-label="Date"><input type="date" class="s-date" value="${data.date||''}"></td>
+            <td data-label="IP"><input type="text" class="s-ip" placeholder="IP/Name" value="${data.ip||''}"></td>
+            <td data-label="Cat"><select class="s-cat" onchange="updateSummary()">${getCategoryOptions(data.cat)}</select></td>
+            <td data-label="Dx"><textarea class="s-dx" placeholder="Details">${data.dx||''}</textarea></td>
+            <td data-label="Role"><select class="s-role"><option>Primary</option><option ${data.role==='Assistant'?'selected':''}>Assistant</option><option ${data.role==='Observer'?'selected':''}>Observer</option></select></td>
+            <td data-label="Surg"><input type="text" class="s-surg" placeholder="Surgeon" value="${data.surg||''}"></td>
             <td><button class="btn-del" onclick="removeRow(this)">X</button></td>
         `;
         tbody.appendChild(row);
     }
+    
+    function removeRow(btn) { if(confirm("Del?")){btn.closest('tr').remove(); updateSummary();} }
 
-    function removeRow(btn) {
-        if(confirm("Delete entry?")) {
-            btn.closest('tr').remove();
-            updateSummaryFromLogs();
-        }
-    }
-
-    function addAcademicRow(data = {}) {
-        const tbody = document.querySelector(`#log-academics tbody`);
+    // 3. ACADEMICS
+    function addAcademicRow(id, placeholders, data={}) {
+        const tbody = document.querySelector(`#${id} tbody`);
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td data-label="Date"><input type="date" class="a-date" value="${data.date || ''}"></td>
-            <td data-label="Topic"><textarea class="a-topic" placeholder="Topic">${data.topic || ''}</textarea></td>
-            <td data-label="Type"><select class="a-type">
-                <option ${data.type==='Seminar'?'selected':''}>Seminar</option>
-                <option ${data.type==='Journal'?'selected':''}>Journal Club</option>
-                <option ${data.type==='Case'?'selected':''}>Case Presentation</option>
-            </select></td>
-            <td data-label="Faculty"><input type="text" class="a-fac" placeholder="Faculty" value="${data.fac || ''}"></td>
-            <td><button class="btn-del" onclick="this.closest('tr').remove()">X</button></td>
-        `;
+        let tds = `<td><input type="text" class="a-col1" placeholder="${placeholders[0]}" value="${data.col1||''}"></td>`;
+        tds += `<td><textarea class="a-col2" placeholder="${placeholders[1]}">${data.col2||''}</textarea></td>`;
+        tds += `<td><input type="text" class="a-col3" placeholder="${placeholders[2]}" value="${data.col3||''}"></td>`;
+        tds += `<td><input type="text" class="a-col4" placeholder="${placeholders[3]}" value="${data.col4||''}"></td>`;
+        row.innerHTML = tds + `<td><button class="btn-del" onclick="this.closest('tr').remove()">X</button></td>`;
         tbody.appendChild(row);
     }
 
-    // AUTO-CALCULATION
-    function updateSummaryFromLogs() {
-        // Reset
-        document.querySelectorAll('[id^="sum-"]').forEach(input => input.value = 0);
-        // Tally
-        document.querySelectorAll('.s-cat').forEach(select => {
-            const catId = select.value;
-            if (catId && catId !== 'other') {
-                const el = document.getElementById(catId);
-                if (el) el.value = parseInt(el.value) + 1;
-            }
+    // 4. SUMMARY
+    function updateSummary() {
+        document.querySelectorAll('[id^="endo-"], [id^="cv-"], [id^="tm-"], [id^="sp-"], [id^="tr-"], [id^="pd-"]').forEach(i => i.value = 0);
+        document.querySelectorAll('.s-cat').forEach(s => {
+            const el = document.getElementById(s.value);
+            if(el) el.value = parseInt(el.value) + 1;
         });
-        // Subtotals
-        document.querySelectorAll('.summary-table').forEach(table => {
-            let total = 0;
-            table.querySelectorAll('tbody tr:not(.subtotal-row) input').forEach(i => total += Number(i.value) || 0);
-            table.querySelector('.total-cell').textContent = total;
+        document.querySelectorAll('.summary-table').forEach(t => {
+            let tot=0; t.querySelectorAll('tbody tr:not(.subtotal-row) input').forEach(i=>tot+=Number(i.value)||0);
+            t.querySelector('.total-cell').textContent=tot;
         });
     }
 
-    // CLOUD SYNC
+    // 5. CLOUD
     function saveToCloud() {
-        const status = document.getElementById('status');
-        status.textContent = "Saving..."; status.style.color = "blue";
+        if(!CLOUD_URL){alert("Connect Drive First");openSetup();return;}
+        document.getElementById('status').textContent="Saving...";
         
         const logs = {};
-        ['log-emergency', 'log-routine', 'log-endo'].forEach(id => {
+        ['log-endo', 'log-open'].forEach(id => {
             logs[id] = [];
-            document.querySelectorAll(`#${id} tbody tr`).forEach(row => {
-                logs[id].push({
-                    date: row.querySelector('.s-date').value,
-                    ip: row.querySelector('.s-ip').value,
-                    cat: row.querySelector('.s-cat').value,
-                    dx: row.querySelector('.s-dx').value,
-                    surg: row.querySelector('.s-surg').value,
-                    asst: row.querySelector('.s-asst').value
-                });
-            });
+            document.querySelectorAll(`#${id} tbody tr`).forEach(r => logs[id].push({
+                date:r.querySelector('.s-date').value, ip:r.querySelector('.s-ip').value, cat:r.querySelector('.s-cat').value,
+                dx:r.querySelector('.s-dx').value, role:r.querySelector('.s-role').value, surg:r.querySelector('.s-surg').value
+            }));
+        });
+        
+        const academics = {};
+        ['log-seminars', 'log-conf', 'log-paper', 'log-pubs'].forEach(id => {
+            academics[id] = [];
+            document.querySelectorAll(`#${id} tbody tr`).forEach(r => academics[id].push({
+                col1:r.querySelector('.a-col1').value, col2:r.querySelector('.a-col2').value, 
+                col3:r.querySelector('.a-col3').value, col4:r.querySelector('.a-col4').value
+            }));
         });
 
-        const academics = [];
-        document.querySelectorAll('#log-academics tbody tr').forEach(row => {
-            academics.push({
-                date: row.querySelector('.a-date').value,
-                topic: row.querySelector('.a-topic').value,
-                type: row.querySelector('.a-type').value,
-                fac: row.querySelector('.a-fac').value
-            });
-        });
-
-        fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "save", content: { logs, academics } }) })
-        .then(() => { status.textContent = "✅ Saved!"; status.style.color = "green"; setTimeout(()=>status.textContent="",3000); })
-        .catch(err => { status.textContent = "❌ Error"; status.style.color = "red"; });
+        fetch(CLOUD_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"save", content:{logs, academics}})})
+        .then(()=>{document.getElementById('status').textContent="✅ Saved!"; setTimeout(()=>document.getElementById('status').textContent="",3000);});
     }
 
     function loadFromCloud() {
-        const status = document.getElementById('status');
-        status.textContent = "Loading...";
-        fetch(CLOUD_URL + "?action=get").then(res => res.json()).then(res => {
-            if(res.status === "success") {
-                const data = res.data;
-                ['log-emergency', 'log-routine', 'log-endo'].forEach(id => {
-                    document.querySelector(`#${id} tbody`).innerHTML = "";
-                    if(data.logs && data.logs[id]) data.logs[id].forEach(r => addRow(id, r));
+        if(!CLOUD_URL){alert("Connect Drive First");openSetup();return;}
+        document.getElementById('status').textContent="Loading...";
+        fetch(CLOUD_URL + "?action=get").then(r=>r.json()).then(res=>{
+            if(res.status==="success"){
+                const d = res.data;
+                ['log-endo', 'log-open'].forEach(id => {
+                    document.querySelector(`#${id} tbody`).innerHTML="";
+                    if(d.logs && d.logs[id]) d.logs[id].forEach(r=>addRow(id,r));
                 });
-                document.querySelector(`#log-academics tbody`).innerHTML = "";
-                if(data.academics) data.academics.forEach(r => addAcademicRow(r));
-                updateSummaryFromLogs();
-                status.textContent = "✅ Loaded!"; status.style.color = "green";
-            } else { status.textContent = "⚠️ No Data"; }
-        }).catch(err => { status.textContent = "❌ Error Loading"; status.style.color = "red"; });
-    }
-
-    // UTILS
-    function openTab(id) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    function generatePDF() {
-        const el = document.getElementById('logbook-content');
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('show-for-pdf'));
-        document.body.classList.add('pdf-mode');
-        document.querySelectorAll('textarea').forEach(ta => ta.style.height = (ta.scrollHeight+5)+"px");
-        html2pdf().from(el).save('Logbook.pdf').then(() => {
-            document.body.classList.remove('pdf-mode');
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('show-for-pdf'));
-            document.querySelector('.tab-content.active').classList.add('show-for-pdf');
+                ['log-seminars', 'log-conf', 'log-paper', 'log-pubs'].forEach(id => {
+                     document.querySelector(`#${id} tbody`).innerHTML="";
+                     if(d.academics && d.academics[id]) d.academics[id].forEach(r=>addAcademicRow(id, [], r)); // placeholders ignored on load
+                });
+                updateSummary();
+                document.getElementById('status').textContent="✅ Loaded!";
+            }
         });
     }
 
+    function openTab(id){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');event.currentTarget.classList.add('active');}
+    function generatePDF(){const el=document.getElementById('logbook-content');document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('show-for-pdf'));document.body.classList.add('pdf-mode');document.querySelectorAll('textarea').forEach(t=>t.style.height=(t.scrollHeight+5)+"px");html2pdf().from(el).save('Logbook.pdf').then(()=>{document.body.classList.remove('pdf-mode');document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('show-for-pdf'));document.querySelector('.tab-content.active').classList.add('show-for-pdf');});}
+
     window.onload = function() {
         checkUrl();
-        ['log-emergency', 'log-routine', 'log-endo'].forEach(id => { if(!document.querySelector(`#${id} tbody tr`)) addRow(id); });
-        if(!document.querySelector(`#log-academics tbody tr`)) addAcademicRow();
+        ['log-endo', 'log-open'].forEach(id=>{if(!document.querySelector(`#${id} tbody tr`)) addRow(id)});
+        if(!document.querySelector(`#log-seminars tbody tr`)) addAcademicRow('log-seminars', ['Date','Topic','Type','Faculty']);
+        if(!document.querySelector(`#log-conf tbody tr`)) addAcademicRow('log-conf', ['Date','Name','Location','Role']);
+        if(!document.querySelector(`#log-paper tbody tr`)) addAcademicRow('log-paper', ['Date','Title','Conference','Award']);
+        if(!document.querySelector(`#log-pubs tbody tr`)) addAcademicRow('log-pubs', ['Year','Title','Journal','Status']);
     }
 </script>
 </body>
