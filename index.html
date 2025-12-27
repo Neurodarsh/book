@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GMC Cloud Logbook (Final)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* BASE STYLES */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 10px; font-size: 16px; }
+        .container { width: 100%; max-width: 1000px; margin: 0 auto; background: white; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box; }
+        
+        /* HEADER */
+        .college-header { text-align: center; border-bottom: 3px solid #b30000; padding-bottom: 15px; margin-bottom: 20px; }
+        .college-header h1 { margin: 0; color: #b30000; font-size: 1.2rem; text-transform: uppercase; }
+        .college-header h2 { margin: 5px 0; color: #333; font-size: 1rem; }
+        
+        /* SECTIONS & TABS */
+        h2.section-title { background-color: #fff0f0; padding: 10px; border-left: 5px solid #b30000; margin-top: 25px; font-size: 1.1rem; }
+        h3 { color: #555; margin-top: 20px; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 1rem; }
+        
+        .tab-buttons { display: flex; overflow-x: auto; gap: 5px; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .tab-btn { padding: 10px 15px; background: #eee; border: none; border-radius: 20px; font-weight: bold; white-space: nowrap; cursor: pointer; flex: 0 0 auto; }
+        .tab-btn.active { background: #b30000; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* INPUTS & TABLES */
+        input, textarea, select { font-size: 16px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.9rem; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        th { background-color: #f8f8f8; font-weight: bold; }
+        
+        .summary-table td:last-child { width: 80px; text-align: center; }
+        .subtotal-row { background-color: #333; color: white; font-weight: bold; }
+
+        /* RESPONSIVE LOG TABLES */
+        @media (max-width: 600px) {
+            .log-table thead { display: none; }
+            .log-table tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+            .log-table td { display: block; border: none; padding: 5px 0; }
+            .log-table td::before { content: attr(data-label); font-weight: bold; display: block; color: #999; font-size: 0.8em; text-transform: uppercase; }
+        }
+
+        /* BUTTONS */
+        .btn-add { background: #008CBA; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
+        .btn-del { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        
+        /* CLOUD ACTIONS */
+        .cloud-actions { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; border: 1px solid #2196F3; }
+        .cloud-btn { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; width: 100%; max-width: 250px; }
+        .btn-save-cloud { background: #2196F3; color: white; }
+        .btn-load-cloud { background: #673AB7; color: white; }
+        .status-msg { margin-top: 15px; font-weight: bold; font-size: 1rem; min-height: 20px; }
+        
+        /* PDF MODE */
+        .show-for-pdf { display: block !important; }
+        .pdf-mode .tab-buttons, .pdf-mode .cloud-actions, .pdf-mode .btn-add, .pdf-mode .btn-del { display: none !important; }
+        .pdf-mode input, .pdf-mode textarea { border: none !important; background: transparent !important; padding: 0; resize: none; overflow: visible; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="logbook-content">
+    <div class="college-header">
+        <h1>Goa Medical College</h1>
+        <h2>Department of Neurosurgery</h2>
+        <p>MCh Logbook (Cloud Sync)</p>
+    </div>
+
+    <div class="tab-buttons" data-html2canvas-ignore="true">
+        <button class="tab-btn active" onclick="openTab('summary')">1. Summary</button>
+        <button class="tab-btn" onclick="openTab('academics')">2. Academics</button>
+        <button class="tab-btn" onclick="openTab('detailed-logs')">3. Operative Logs</button>
+    </div>
+
+    <div id="summary" class="tab-content active">
+        <h2 class="section-title">1. Adult Cases Summary</h2>
+        <table class="summary-table" id="table-summary-adult">
+            <thead><tr><th>Pathology</th><th>Total</th></tr></thead>
+            <tbody>
+                <tr><td>Glioma (Low/High Grade)</td><td><input type="number" class="sum-input"></td></tr>
+                <tr><td>Meningioma</td><td><input type="number" class="sum-input"></td></tr>
+                <tr><td>CP Angle / Posterior Fossa</td><td><input type="number" class="sum-input"></td></tr>
+                <tr><td>Aneurysm / AVM</td><td><input type="number" class="sum-input"></td></tr>
+                <tr><td>Trauma (SDH/EDH/Contusion)</td><td><input type="number" class="sum-input"></td></tr>
+                <tr><td>Spine (Degenerative/Trauma)</td><td><input type="number" class="sum-input"></td></tr>
+                <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
+            </tbody>
+        </table>
+
+        <h2 class="section-title">2. Paediatric Summary</h2>
+        <table class="summary-table" id="table-summary-paed">
+            <thead><tr><th>Pathology</th><th>Total</th></tr></thead>
+            <tbody>
+                <tr><td>Paediatric Tumours</td><td><input type="number" class="sum-input"></td></tr>
+                <tr><td>Hydrocephalus (Shunts)</td><td><input type="number" class="sum-input"></td></tr>
+                <tr><td>Spinal Dysraphism</td><td><input type="number" class="sum-input"></td></tr>
+                <tr class="subtotal-row"><td>SUBTOTAL</td><td class="total-cell">0</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="academics" class="tab-content">
+        <h2 class="section-title">Seminars / Journal Club</h2>
+        <button class="btn-add" onclick="addRow('log-seminars')">+ Add Activity</button>
+        <table class="log-table" id="log-seminars">
+            <thead><tr><th style="width:20%">Date</th><th>Topic</th><th>Type</th><th style="width:10%">X</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h2 class="section-title">Case Presentations</h2>
+        <button class="btn-add" onclick="addRow('log-cases')">+ Add Case</button>
+        <table class="log-table" id="log-cases">
+            <thead><tr><th style="width:20%">Topic</th><th>Faculty</th><th style="width:10%">X</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="detailed-logs" class="tab-content">
+        <h2 class="section-title">Emergency OT Log</h2>
+        <button class="btn-add" onclick="addRow('log-emergency')">+ Add Emergency Case</button>
+        <table class="log-table" id="log-emergency">
+            <thead><tr><th style="width:15%">Date</th><th style="width:20%">IP/Name</th><th>Dx & Procedure</th><th style="width:10%">X</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h2 class="section-title">Routine OT Log</h2>
+        <button class="btn-add" onclick="addRow('log-routine')">+ Add Routine Case</button>
+        <table class="log-table" id="log-routine">
+            <thead><tr><th style="width:15%">Date</th><th style="width:20%">IP/Name</th><th>Dx & Procedure</th><th style="width:10%">X</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h2 class="section-title">Endovascular Log</h2>
+        <button class="btn-add" onclick="addRow('log-endo')">+ Add Endo Case</button>
+        <table class="log-table" id="log-endo">
+            <thead><tr><th style="width:15%">Date</th><th style="width:20%">IP/Name</th><th>Dx & Procedure</th><th style="width:10%">X</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="cloud-actions" data-html2canvas-ignore="true">
+        <h3>☁️ Cloud Sync (Google Drive)</h3>
+        <p style="font-size:0.8em; color:#666; margin-bottom:15px;">Sync your data across all devices</p>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
+            <button class="cloud-btn btn-save-cloud" onclick="saveToCloud()">⬆ Save Data</button>
+            <button class="cloud-btn btn-load-cloud" onclick="loadFromCloud()">⬇ Load Data</button>
+        </div>
+        <div id="status" class="status-msg"></div>
+        <hr style="margin:20px 0; border:0; border-top:1px solid #ddd;">
+        <button onclick="generatePDF()" style="background:#555; color:white; padding:12px; border:none; border-radius:5px; width:100%; font-weight:bold;">Download PDF Logbook</button>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // CONFIGURATION: YOUR URL IS SET BELOW
+    // ==========================================
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyNrTGqLv91E1IyGwT8W2C_0EFhrDd6CP1FhW_cuyLYymHkbcI4-ZkhvrOS8416tb7u/exec"; 
+
+    // ==========================================
+    // APP LOGIC
+    // ==========================================
+
+    // 1. Add Dynamic Rows
+    function addRow(tableId, data = {}) {
+        const tbody = document.querySelector(`#${tableId} tbody`);
+        const row = document.createElement('tr');
+        
+        let cells = '';
+        // Different inputs based on table type
+        if(tableId.includes('seminars')) {
+            cells = `
+                <td data-label="Date"><input type="date" class="save-input" value="${data.col1 || ''}"></td>
+                <td data-label="Topic"><textarea class="save-input" placeholder="Topic">${data.col2 || ''}</textarea></td>
+                <td data-label="Type"><select class="save-input"><option>Seminar</option><option>Journal</option></select></td>
+            `;
+            // Set select value after appending
+            setTimeout(() => { if(data.col3) row.querySelectorAll('.save-input')[2].value = data.col3; }, 0);
+        } else if (tableId.includes('cases')) {
+             cells = `
+                <td data-label="Topic"><textarea class="save-input" placeholder="Case Topic">${data.col1 || ''}</textarea></td>
+                <td data-label="Faculty"><input type="text" class="save-input" placeholder="Dr. Name" value="${data.col2 || ''}"></td>
+            `;
+        } else {
+            // Operative Logs (Emerg/Routine/Endo)
+            cells = `
+                <td data-label="Date"><input type="date" class="save-input" value="${data.col1 || ''}"></td>
+                <td data-label="IP/Name"><input type="text" class="save-input" placeholder="Name / IP" value="${data.col2 || ''}"></td>
+                <td data-label="Dx/Proc"><textarea class="save-input" placeholder="Dx & Procedure">${data.col3 || ''}</textarea></td>
+            `;
+        }
+        
+        row.innerHTML = cells + `<td><button class="btn-del" onclick="this.closest('tr').remove()">Del</button></td>`;
+        tbody.appendChild(row);
+    }
+
+    // 2. Tab Switching
+    function openTab(id) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // 3. Save to Cloud
+    function saveToCloud() {
+        const status = document.getElementById('status');
+        status.textContent = "Syncing with Drive...";
+        status.style.color = "blue";
+
+        // Collect Summary Data
+        const summaryData = [];
+        document.querySelectorAll('.summary-table input').forEach((input, index) => {
+            summaryData.push(input.value);
+        });
+
+        // Collect Log Data (Organized by Table ID)
+        const logData = {};
+        ['log-seminars', 'log-cases', 'log-emergency', 'log-routine', 'log-endo'].forEach(id => {
+            logData[id] = [];
+            document.querySelectorAll(`#${id} tbody tr`).forEach(row => {
+                const inputs = row.querySelectorAll('.save-input');
+                // Store up to 3 columns generic
+                const rowData = { 
+                    col1: inputs[0]?.value || '', 
+                    col2: inputs[1]?.value || '', 
+                    col3: inputs[2]?.value || '' 
+                };
+                logData[id].push(rowData);
+            });
+        });
+
+        const payload = { action: "save", content: { summary: summaryData, logs: logData } };
+
+        fetch(CLOUD_URL, {
+            method: "POST", mode: "no-cors", body: JSON.stringify(payload)
+        }).then(() => {
+            status.textContent = "✅ Saved Successfully!";
+            status.style.color = "green";
+            setTimeout(() => status.textContent = "", 4000);
+        }).catch(err => {
+            status.textContent = "❌ Error: " + err;
+            status.style.color = "red";
+        });
+    }
+
+    // 4. Load from Cloud
+    function loadFromCloud() {
+        const status = document.getElementById('status');
+        status.textContent = "Loading...";
+
+        fetch(CLOUD_URL + "?action=get")
+        .then(res => res.json())
+        .then(response => {
+            if(response.status === "success") {
+                const data = response.data;
+                
+                // Restore Summary
+                const sumInputs = document.querySelectorAll('.summary-table input');
+                data.summary.forEach((val, index) => {
+                    if(sumInputs[index]) sumInputs[index].value = val;
+                });
+                calcTotals(); // Recalculate totals
+
+                // Restore Logs
+                for (const [tableId, rows] of Object.entries(data.logs)) {
+                    const tbody = document.querySelector(`#${tableId} tbody`);
+                    tbody.innerHTML = ""; // Clear existing
+                    rows.forEach(rowData => addRow(tableId, rowData));
+                }
+
+                status.textContent = "✅ Data Loaded!";
+                status.style.color = "green";
+            } else {
+                status.textContent = "⚠️ No saved data found.";
+                status.style.color = "orange";
+            }
+        });
+    }
+
+    // 5. Total Calculation Helper
+    function calcTotals() {
+        document.querySelectorAll('.summary-table').forEach(table => {
+            let total = 0;
+            table.querySelectorAll('input').forEach(i => total += Number(i.value) || 0);
+            table.querySelector('.total-cell').textContent = total;
+        });
+    }
+
+    // 6. Initialize
+    window.onload = function() {
+        // Add empty rows if tables are empty
+        ['log-seminars', 'log-cases', 'log-emergency', 'log-routine', 'log-endo'].forEach(id => {
+            if(!document.querySelector(`#${id} tbody tr`)) addRow(id);
+        });
+
+        // Listen for summary changes
+        document.querySelectorAll('.summary-table').forEach(t => {
+            t.addEventListener('input', calcTotals);
+        });
+    }
+
+    // 7. PDF Generator
+    function generatePDF() {
+        const element = document.getElementById('logbook-content');
+        const tabs = document.querySelectorAll('.tab-content');
+        
+        // Prep view
+        tabs.forEach(t => t.classList.add('show-for-pdf'));
+        document.body.classList.add('pdf-mode');
+        document.querySelectorAll('textarea').forEach(ta => ta.style.height = (ta.scrollHeight + 5) + "px");
+
+        html2pdf().from(element).save('GMC_Logbook.pdf').then(() => {
+            tabs.forEach(t => t.classList.remove('show-for-pdf'));
+            document.body.classList.remove('pdf-mode');
+            document.querySelector('.tab-content.active').classList.add('show-for-pdf');
+        });
+    }
+</script>
+
+</body>
+</html>
