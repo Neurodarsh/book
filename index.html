@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Hybrid Logbook</title>
+    <title>Universal Neurosurgery Logbook</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -16,6 +16,14 @@
         .college-header h1 { margin: 0; color: #b30000; font-size: 1.2rem; text-transform: uppercase; }
         .college-header h2 { margin: 5px 0; color: #333; font-size: 1rem; }
         
+        /* SETUP BOX */
+        .setup-container { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .setup-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .setup-content { display: none; margin-top: 10px; border-top: 1px solid #e6dbb9; padding-top: 10px; font-size: 0.9em; }
+        .setup-input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-connect { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        .instructions ol { padding-left: 20px; line-height: 1.6; }
+
         /* TABS */
         .tab-buttons { display: flex; overflow-x: auto; gap: 5px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid #ddd; }
         .tab-btn { padding: 10px 20px; background: #eee; border: none; border-radius: 5px 5px 0 0; font-weight: bold; white-space: nowrap; cursor: pointer; }
@@ -23,36 +31,29 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* SECTIONS */
+        /* SECTIONS & TABLES */
         h2.section-title { background-color: #fff0f0; padding: 10px; border-left: 5px solid #b30000; margin-top: 25px; font-size: 1.1rem; color: #b30000; }
         h3 { color: #555; margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 1rem; }
-
-        /* TABLES */
+        
         table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; }
         th { background-color: #f8f8f8; font-weight: bold; color: #444; }
-        
-        /* INPUTS */
         input, textarea, select { font-size: 13px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
         textarea { resize: vertical; min-height: 35px; }
 
-        /* SUMMARY SPECIFIC */
+        /* SUMMARY & LOG SPECIFICS */
         .summary-table td:last-child { width: 60px; text-align: center; }
         .summary-table input { text-align: center; font-weight: bold; background: #f9f9f9; border: none; }
         .subtotal-row { background-color: #444; color: white; font-weight: bold; }
         .subtotal-row td { color: white; }
-
-        /* LOG TABLE SPECIFIC */
-        .log-table th { white-space: nowrap; }
         
-        /* BUTTONS */
-        .btn-add { background: #008CBA; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
+        .btn-add { background: #008CBA; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
         .btn-del { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
-        
-        /* CLOUD BOX */
-        .cloud-actions { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; border: 1px solid #2196F3; }
-        .cloud-btn { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; min-width: 150px; color: white; }
 
+        /* CLOUD ACTIONS */
+        .cloud-actions { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; border: 1px solid #2196F3; display: none; }
+        .cloud-btn { padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; width: 100%; max-width: 200px; color: white; }
+        
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .log-table thead { display: none; }
@@ -63,7 +64,7 @@
 
         /* PDF MODE */
         .show-for-pdf { display: block !important; }
-        .pdf-mode .tab-buttons, .pdf-mode .cloud-actions, .pdf-mode .btn-add, .pdf-mode .btn-del { display: none !important; }
+        .pdf-mode .tab-buttons, .pdf-mode .cloud-actions, .pdf-mode .setup-container, .pdf-mode .btn-add, .pdf-mode .btn-del { display: none !important; }
         .pdf-mode input, .pdf-mode textarea, .pdf-mode select { border: none !important; background: transparent !important; padding: 0; appearance: none; }
     </style>
 </head>
@@ -73,18 +74,45 @@
     <div class="college-header">
         <h1>Goa Medical College</h1>
         <h2>Department of Neurosurgery</h2>
-        <p>MCh Smart Logbook (Auto-Calculating)</p>
+        <p>MCh Logbook (Cloud Sync Edition)</p>
+    </div>
+
+    <div class="setup-container" id="setup-box" data-html2canvas-ignore="true">
+        <div class="setup-header" onclick="toggleSetup()">
+            <strong>⚙️ Click here to Connect YOUR Google Drive</strong>
+            <span>▼</span>
+        </div>
+        <div class="setup-content" id="setup-steps">
+            <div class="instructions">
+                <strong>One-Time Setup Instructions:</strong>
+                <ol>
+                    <li>Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> and create a new sheet named "Logbook DB".</li>
+                    <li>Rename the first tab at the bottom to <code>Logs</code>.</li>
+                    <li>Click <strong>Extensions > Apps Script</strong>.</li>
+                    <li>Delete any code and paste the code block below.</li>
+                    <li>Click <strong>Deploy > New Deployment</strong>. Select type: <strong>Web App</strong>.</li>
+                    <li>Set <em>Who has access</em> to <strong>Anyone</strong>. Click Deploy.</li>
+                    <li>Copy the <strong>Web App URL</strong> and paste it below.</li>
+                </ol>
+            </div>
+            <textarea style="height:60px; font-family:monospace; font-size:0.8em; margin-bottom:10px;" readonly onclick="this.select()">
+function doPost(e){try{var d=JSON.parse(e.postData.contents);var s=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Logs");if(d.action=="save"){s.clear();s.getRange(1,1).setValue(JSON.stringify(d.content));return ContentService.createTextOutput(JSON.stringify({status:"success"}));}}catch(e){return ContentService.createTextOutput(JSON.stringify({status:"error",error:e.toString()}));}}
+function doGet(e){try{var s=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Logs");var d=s.getRange(1,1).getValue();return ContentService.createTextOutput(JSON.stringify({status:"success",data:JSON.parse(d)}));}catch(e){return ContentService.createTextOutput(JSON.stringify({status:"error"}));}}
+            </textarea>
+            <input type="text" id="user-url" class="setup-input" placeholder="Paste Web App URL here (starts with https://script.google.com...)">
+            <button class="btn-connect" onclick="saveUrl()">Connect My Drive</button>
+        </div>
     </div>
 
     <div class="tab-buttons" data-html2canvas-ignore="true">
-        <button class="tab-btn active" onclick="openTab('summary')">1. Summary (Auto)</button>
+        <button class="tab-btn active" onclick="openTab('summary')">1. Auto-Summary</button>
         <button class="tab-btn" onclick="openTab('logs')">2. Operative Logs</button>
         <button class="tab-btn" onclick="openTab('academics')">3. Academics</button>
     </div>
 
     <div id="summary" class="tab-content active">
-        <p style="background:#fff3cd; padding:10px; border-radius:5px; font-size:0.9em;">
-            ℹ️ <strong>Note:</strong> This section updates automatically when you add cases to the "Operative Logs" tab.
+        <p style="background:#e3f2fd; padding:10px; border-radius:5px; font-size:0.9em;">
+            <strong>ℹ️ Live Stats:</strong> These numbers update automatically as you add cases to Tab 2.
         </p>
 
         <h2 class="section-title">A. Adult Procedures</h2>
@@ -111,10 +139,10 @@
                 <tr><td>Glioma: Low Grade</td><td><input readonly id="sum-glioma-low" value="0"></td></tr>
                 <tr><td>Glioma: High Grade</td><td><input readonly id="sum-glioma-high" value="0"></td></tr>
                 <tr><td>Meningioma</td><td><input readonly id="sum-meningioma" value="0"></td></tr>
-                <tr><td>Pituitary</td><td><input readonly id="sum-pituitary" value="0"></td></tr>
+                <tr><td>Pituitary (Trans-Sphenoidal/Cranial)</td><td><input readonly id="sum-pituitary" value="0"></td></tr>
                 <tr><td>CP Angle / Acoustic</td><td><input readonly id="sum-cpangle" value="0"></td></tr>
                 <tr><td>Metastasis</td><td><input readonly id="sum-mets" value="0"></td></tr>
-                <tr><td>Skull Base</td><td><input readonly id="sum-skullbase" value="0"></td></tr>
+                <tr><td>Skull Base Approach</td><td><input readonly id="sum-skullbase" value="0"></td></tr>
                 <tr class="subtotal-row"><td>Subtotal</td><td class="total-cell">0</td></tr>
             </tbody>
         </table>
@@ -126,7 +154,7 @@
                 <tr><td>Discectomy (Cervical/Lumbar)</td><td><input readonly id="sum-disc" value="0"></td></tr>
                 <tr><td>Laminectomy / Decompression</td><td><input readonly id="sum-laminectomy" value="0"></td></tr>
                 <tr><td>Spinal Fusion (Instru.)</td><td><input readonly id="sum-fusion" value="0"></td></tr>
-                <tr><td>Spinal Tumour</td><td><input readonly id="sum-spine-tumour" value="0"></td></tr>
+                <tr><td>Spinal Tumour (Extra/Intradural)</td><td><input readonly id="sum-spine-tumour" value="0"></td></tr>
                 <tr><td>Spinal Trauma</td><td><input readonly id="sum-spine-trauma" value="0"></td></tr>
                 <tr><td>CV Junction</td><td><input readonly id="sum-cvj" value="0"></td></tr>
                 <tr class="subtotal-row"><td>Subtotal</td><td class="total-cell">0</td></tr>
@@ -165,10 +193,10 @@
         <table class="log-table" id="log-emergency">
             <thead>
                 <tr>
-                    <th style="width:12%">Date</th>
+                    <th style="width:10%">Date</th>
                     <th style="width:15%">IP/Name</th>
-                    <th style="width:20%">Category (For Stats)</th>
-                    <th>Diagnosis & Procedure (Details)</th>
+                    <th style="width:20%">Category (Auto-Stats)</th>
+                    <th>Diagnosis & Procedure</th>
                     <th style="width:12%">Surgeon</th>
                     <th style="width:12%">Assistant</th>
                     <th style="width:5%">Del</th>
@@ -182,10 +210,10 @@
         <table class="log-table" id="log-routine">
             <thead>
                 <tr>
-                    <th style="width:12%">Date</th>
+                    <th style="width:10%">Date</th>
                     <th style="width:15%">IP/Name</th>
-                    <th style="width:20%">Category (For Stats)</th>
-                    <th>Diagnosis & Procedure (Details)</th>
+                    <th style="width:20%">Category (Auto-Stats)</th>
+                    <th>Diagnosis & Procedure</th>
                     <th style="width:12%">Surgeon</th>
                     <th style="width:12%">Assistant</th>
                     <th style="width:5%">Del</th>
@@ -199,10 +227,10 @@
         <table class="log-table" id="log-endo">
             <thead>
                 <tr>
-                    <th style="width:12%">Date</th>
+                    <th style="width:10%">Date</th>
                     <th style="width:15%">IP/Name</th>
-                    <th style="width:20%">Category (For Stats)</th>
-                    <th>Diagnosis & Procedure (Details)</th>
+                    <th style="width:20%">Category (Auto-Stats)</th>
+                    <th>Diagnosis & Procedure</th>
                     <th style="width:12%">Surgeon</th>
                     <th style="width:12%">Assistant</th>
                     <th style="width:5%">Del</th>
@@ -229,11 +257,13 @@
         </table>
     </div>
 
-    <div class="cloud-actions" data-html2canvas-ignore="true">
-        <h3>☁️ Cloud Sync</h3>
-        <p style="font-size:0.9em; color:#666; margin-bottom:15px">Save to Google Drive to keep data safe.</p>
+    <div class="cloud-actions" id="cloud-actions" data-html2canvas-ignore="true">
+        <h3>☁️ Cloud Sync Active</h3>
+        <p id="connected-msg" style="font-size:0.9em; color:#0056b3; margin-bottom:15px"></p>
         <button class="cloud-btn" style="background:#2196F3" onclick="saveToCloud()">⬆ Save Data</button>
         <button class="cloud-btn" style="background:#673AB7" onclick="loadFromCloud()">⬇ Load Data</button>
+        <br>
+        <button class="cloud-btn" style="background:#999; font-size:0.8em; padding:5px 10px; min-width:auto; margin-top:15px;" onclick="resetUrl()">Disconnect</button>
         <div id="status" style="margin-top:10px; font-weight:bold; height:20px;"></div>
         <hr style="margin:20px 0; border:0; border-top:1px solid #ddd;">
         <button class="cloud-btn" style="background:#555" onclick="generatePDF()">Download PDF</button>
@@ -241,12 +271,7 @@
 </div>
 
 <script>
-    // ==========================================
-    // CONFIGURATION
-    // ==========================================
-    const CLOUD_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"; 
-
-    // Category Map for Dropdowns
+    // CATEGORY MAPPING
     const categories = [
         { val: "", text: "-- Select Category --" },
         { group: "Cerebrovascular", items: [
@@ -287,14 +312,45 @@
             {val: "sum-paed-hydro", text: "Hydrocephalus"},
             {val: "sum-paed-mmc", text: "Dysraphism / MMC"}
         ]},
-        { val: "other", text: "Other (Not Counted in Summary)" }
+        { val: "other", text: "Other (No Stats)" }
     ];
 
-    // ==========================================
-    // LOGIC
-    // ==========================================
+    // 1. SETUP LOGIC
+    let CLOUD_URL = "";
 
-    // 1. Generate Dropdown HTML
+    function toggleSetup() {
+        const content = document.getElementById('setup-steps');
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function checkUrl() {
+        const storedUrl = localStorage.getItem("logbook_url");
+        if(storedUrl) {
+            CLOUD_URL = storedUrl;
+            document.getElementById('setup-box').style.display = 'none';
+            document.getElementById('cloud-actions').style.display = 'block';
+            document.getElementById('connected-msg').textContent = "Connected to Drive";
+        }
+    }
+
+    function saveUrl() {
+        const input = document.getElementById('user-url').value.trim();
+        if(!input.startsWith("https://script.google.com")) {
+            alert("Invalid URL. It must start with 'https://script.google.com'");
+            return;
+        }
+        localStorage.setItem("logbook_url", input);
+        location.reload();
+    }
+
+    function resetUrl() {
+        if(confirm("Disconnect your Google Drive?")) {
+            localStorage.removeItem("logbook_url");
+            location.reload();
+        }
+    }
+
+    // 2. TABLE LOGIC
     function getCategoryOptions(selectedVal) {
         let options = '';
         categories.forEach(cat => {
@@ -313,36 +369,28 @@
         return options;
     }
 
-    // 2. Add Operative Log Row
     function addRow(tableId, data = {}) {
         const tbody = document.querySelector(`#${tableId} tbody`);
         const row = document.createElement('tr');
-        
         row.innerHTML = `
             <td data-label="Date"><input type="date" class="s-date" value="${data.date || ''}"></td>
             <td data-label="IP/Name"><input type="text" class="s-ip" placeholder="Name/IP" value="${data.ip || ''}"></td>
-            <td data-label="Category">
-                <select class="s-cat" onchange="updateSummaryFromLogs()">
-                    ${getCategoryOptions(data.cat)}
-                </select>
-            </td>
+            <td data-label="Category"><select class="s-cat" onchange="updateSummaryFromLogs()">${getCategoryOptions(data.cat)}</select></td>
             <td data-label="Diagnosis"><textarea class="s-dx" placeholder="Details...">${data.dx || ''}</textarea></td>
             <td data-label="Surgeon"><input type="text" class="s-surg" placeholder="Surgeon" value="${data.surg || ''}"></td>
             <td data-label="Assistant"><input type="text" class="s-asst" placeholder="Assistant" value="${data.asst || ''}"></td>
             <td><button class="btn-del" onclick="removeRow(this)">X</button></td>
         `;
         tbody.appendChild(row);
-        // Do not update summary immediately on load, wait for full load
     }
 
     function removeRow(btn) {
-        if(confirm("Delete this entry?")) {
+        if(confirm("Delete entry?")) {
             btn.closest('tr').remove();
             updateSummaryFromLogs();
         }
     }
 
-    // 3. Add Academic Row
     function addAcademicRow(data = {}) {
         const tbody = document.querySelector(`#log-academics tbody`);
         const row = document.createElement('tr');
@@ -360,27 +408,19 @@
         tbody.appendChild(row);
     }
 
-    // 4. AUTO-CALCULATE SUMMARY
+    // AUTO-CALCULATION
     function updateSummaryFromLogs() {
-        // Reset all summary counts to 0
+        // Reset
         document.querySelectorAll('[id^="sum-"]').forEach(input => input.value = 0);
-
-        // Iterate through all Category Dropdowns in Logs
-        const logDropdowns = document.querySelectorAll('.s-cat');
-        logDropdowns.forEach(select => {
-            const categoryId = select.value;
-            if (categoryId && categoryId !== 'other') {
-                const summaryInput = document.getElementById(categoryId);
-                if (summaryInput) {
-                    summaryInput.value = parseInt(summaryInput.value) + 1;
-                }
+        // Tally
+        document.querySelectorAll('.s-cat').forEach(select => {
+            const catId = select.value;
+            if (catId && catId !== 'other') {
+                const el = document.getElementById(catId);
+                if (el) el.value = parseInt(el.value) + 1;
             }
         });
-
-        calcSubtotals();
-    }
-
-    function calcSubtotals() {
+        // Subtotals
         document.querySelectorAll('.summary-table').forEach(table => {
             let total = 0;
             table.querySelectorAll('tbody tr:not(.subtotal-row) input').forEach(i => total += Number(i.value) || 0);
@@ -388,13 +428,11 @@
         });
     }
 
-    // 5. Cloud Sync Logic
+    // CLOUD SYNC
     function saveToCloud() {
-        if(CLOUD_URL.includes("PASTE")) { alert("Error: Setup Google Script URL in code first."); return; }
         const status = document.getElementById('status');
         status.textContent = "Saving..."; status.style.color = "blue";
-
-        // Gather Log Data
+        
         const logs = {};
         ['log-emergency', 'log-routine', 'log-endo'].forEach(id => {
             logs[id] = [];
@@ -410,7 +448,6 @@
             });
         });
 
-        // Gather Academics
         const academics = [];
         document.querySelectorAll('#log-academics tbody tr').forEach(row => {
             academics.push({
@@ -421,40 +458,30 @@
             });
         });
 
-        const payload = { action: "save", content: { logs, academics } }; // We don't save summary inputs, we recalc them
-
-        fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) })
+        fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "save", content: { logs, academics } }) })
         .then(() => { status.textContent = "✅ Saved!"; status.style.color = "green"; setTimeout(()=>status.textContent="",3000); })
         .catch(err => { status.textContent = "❌ Error"; status.style.color = "red"; });
     }
 
     function loadFromCloud() {
-        if(CLOUD_URL.includes("PASTE")) { alert("Setup URL first."); return; }
         const status = document.getElementById('status');
         status.textContent = "Loading...";
-
         fetch(CLOUD_URL + "?action=get").then(res => res.json()).then(res => {
             if(res.status === "success") {
                 const data = res.data;
-                
-                // Clear and Load Logs
                 ['log-emergency', 'log-routine', 'log-endo'].forEach(id => {
                     document.querySelector(`#${id} tbody`).innerHTML = "";
                     if(data.logs && data.logs[id]) data.logs[id].forEach(r => addRow(id, r));
                 });
-
-                // Clear and Load Academics
                 document.querySelector(`#log-academics tbody`).innerHTML = "";
                 if(data.academics) data.academics.forEach(r => addAcademicRow(r));
-
-                // Recalculate Summary
                 updateSummaryFromLogs();
-
                 status.textContent = "✅ Loaded!"; status.style.color = "green";
-            } else { status.textContent = "⚠️ No Data Found"; }
-        });
+            } else { status.textContent = "⚠️ No Data"; }
+        }).catch(err => { status.textContent = "❌ Error Loading"; status.style.color = "red"; });
     }
 
+    // UTILS
     function openTab(id) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -467,15 +494,15 @@
         document.querySelectorAll('.tab-content').forEach(t => t.classList.add('show-for-pdf'));
         document.body.classList.add('pdf-mode');
         document.querySelectorAll('textarea').forEach(ta => ta.style.height = (ta.scrollHeight+5)+"px");
-        html2pdf().from(el).save('Smart_Logbook.pdf').then(() => {
+        html2pdf().from(el).save('Logbook.pdf').then(() => {
             document.body.classList.remove('pdf-mode');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('show-for-pdf'));
             document.querySelector('.tab-content.active').classList.add('show-for-pdf');
         });
     }
 
-    // Init
     window.onload = function() {
+        checkUrl();
         ['log-emergency', 'log-routine', 'log-endo'].forEach(id => { if(!document.querySelector(`#${id} tbody tr`)) addRow(id); });
         if(!document.querySelector(`#log-academics tbody tr`)) addAcademicRow();
     }
