@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> Neurosurgery Logbook</title>
+    <title>Neurosurgery Logbook</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -17,13 +17,13 @@
         .header h2 { margin: 5px 0; color: #555; font-size: 1.1rem; }
         .settings-btn { position: absolute; top: 15px; right: 15px; background: #eee; border: 1px solid #ccc; padding: 8px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; width: 40px; height: 40px; }
 
-        /* SETUP MODAL */
+        /* MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: flex-start; padding-top: 50px; overflow-y: auto; }
-        .modal-box { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom: 50px; }
+        .modal-box { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 650px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 50px; }
+        .code-block { background: #f4f4f4; border: 1px solid #ddd; padding: 10px; font-family: monospace; font-size: 0.85em; height: 120px; overflow-y: scroll; white-space: pre; margin-bottom: 10px; display: block; width: 100%; box-sizing: border-box; }
         .setup-input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .code-block { background: #f4f4f4; border: 1px solid #ddd; padding: 10px; font-family: monospace; font-size: 0.85em; height: 100px; overflow-y: scroll; white-space: pre; margin-bottom: 10px; display: block; width: 100%; box-sizing: border-box; }
         .btn-green { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .step-list { padding-left: 20px; line-height: 1.5; color: #444; }
+        .step-list { padding-left: 20px; line-height: 1.5; color: #444; margin-bottom: 15px; }
         .step-list li { margin-bottom: 8px; }
 
         /* TABS */
@@ -34,14 +34,13 @@
         .tab-content.active { display: block; }
 
         /* SUMMARY SECTIONS */
-        h1.main-divider { background-color: #003366; color: white; padding: 10px; text-align: center; margin-top: 30px; font-size: 1.2rem; text-transform: uppercase; border-radius: 5px; }
+        h1.main-divider { background-color: #003366; color: white; padding: 10px; text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1.2rem; text-transform: uppercase; border-radius: 5px; }
         h2.section-title { background-color: #eef4ff; padding: 8px; border-left: 5px solid #003366; margin-top: 15px; font-size: 1rem; color: #003366; font-weight: bold; }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.85rem; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: left; vertical-align: middle; }
         th { background-color: #f8f9fa; font-weight: bold; color: #333; }
         
-        /* INPUTS */
         .summary-table td:last-child { width: 60px; text-align: center; }
         .summary-table input { text-align: center; font-weight: bold; background: white; border: 1px solid #eee; width: 100%; }
         .subtotal-row { background-color: #333; color: white; font-weight: bold; }
@@ -50,17 +49,14 @@
         input, textarea, select { font-size: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
         textarea { resize: vertical; min-height: 35px; }
         
-        /* BUTTONS & IMAGES */
         .btn-add { background: #003366; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
         .btn-del { background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8em; }
         .img-link { display: inline-block; margin-top: 4px; font-size: 0.8em; color: #0056b3; background: #eef; padding: 2px 5px; border-radius: 3px; text-decoration: none; }
         input[type="file"] { border: none; font-size: 0.85em; width: 90px; }
 
-        /* CLOUD BOX */
         .cloud-box { background: #e8f0fe; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; border: 1px solid #b3d7ff; }
         .cloud-btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; width: 100%; max-width: 200px; color: white; }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .log-table thead { display: none; }
             .log-table tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -68,7 +64,6 @@
             .log-table td::before { content: attr(data-label); font-weight: bold; display: block; color: #888; font-size: 0.75em; text-transform: uppercase; }
         }
 
-        /* PDF MODE */
         .show-for-pdf { display: block !important; }
         .pdf-mode .tab-buttons, .pdf-mode .cloud-box, .pdf-mode .settings-btn, .pdf-mode .btn-add, .pdf-mode .btn-del { display: none !important; }
         .pdf-mode input, .pdf-mode textarea, .pdf-mode select { border: none !important; background: transparent !important; padding: 0; appearance: none; }
@@ -78,36 +73,32 @@
 <body>
 
 <div class="container" id="logbook-content">
-    <button class="settings-btn" onclick="openSetup()" title="Settings">⚙️</button>
+    <button class="settings-btn" onclick="openSetup()" title="Connect Drive">⚙️</button>
     
     <div class="header">
         <h1>Neurosurgery Logbook</h1>
-        <h2>Complete Australian & GMC Format</h2>
+        <h2>Royal Australasian College & GMC Format</h2>
     </div>
 
     <div class="modal-overlay" id="setup-modal">
         <div class="modal-box">
             <h3 style="margin-top:0; color:#003366;">⚙️ Connect Your Cloud</h3>
-            <p><strong>Step 1:</strong> Create the Backend Script</p>
-            <ol class="step-list">
-                <li>Go to <a href="https://script.google.com/home" target="_blank">script.google.com</a> and click <strong>"New Project"</strong>.</li>
-                <li>Delete any code in the editor and paste the code below:</li>
-            </ol>
-            
+            <p><strong>Step 1:</strong> Copy the code below.</p>
             <textarea id="script-code" class="code-block" readonly>
 function doPost(e){try{var d=JSON.parse(e.postData.contents),a=d.action,ss=SpreadsheetApp.getActiveSpreadsheet(),s=ss.getSheetByName("Logs");if(!s)s=ss.insertSheet("Logs");if(a=="save"){var pl=procImg(d.content.logs);s.clear();s.getRange(1,1).setValue(JSON.stringify({l:pl,a:d.content.aca}));return ContentService.createTextOutput(JSON.stringify({status:"success"}));}}catch(e){return ContentService.createTextOutput(JSON.stringify({status:"error",m:e.toString()}));}}
 function doGet(e){try{var ss=SpreadsheetApp.getActiveSpreadsheet(),s=ss.getSheetByName("Logs"),d=s.getRange(1,1).getValue();return ContentService.createTextOutput(JSON.stringify({status:"success",data:JSON.parse(d)}));}catch(e){return ContentService.createTextOutput(JSON.stringify({status:"error"}));}}
 function procImg(l){var fn="Logbook_Images",fs=DriveApp.getFoldersByName(fn),f=fs.hasNext()?fs.next():DriveApp.createFolder(fn);for(var k in l){var rs=l[k];for(var i=0;i<rs.length;i++){var r=rs[i];if(r.pre&&r.pre.startsWith("data:"))r.pre=sv64(f,r.pre,r.ip+"_pre_"+r.date);if(r.pos&&r.pos.startsWith("data:"))r.pos=sv64(f,r.pos,r.ip+"_pos_"+r.date);}}return l;}
 function sv64(f,b,n){var s=b.split('base64,'),t=s[0].split(':')[1].split(';')[0],bl=Utilities.newBlob(Utilities.base64Decode(s[1]),t,n);return f.createFile(bl).getUrl();}
             </textarea>
-            <button onclick="copyCode()" style="background:#eee; border:1px solid #ccc; padding:5px; width:100%; cursor:pointer;">📋 Copy Code</button>
+            <button onclick="copyCode()" style="background:#eee; border:1px solid #ccc; padding:5px; width:100%; cursor:pointer; margin-bottom:15px;">📋 Copy to Clipboard</button>
 
-            <p><strong>Step 2:</strong> Deploy</p>
+            <p><strong>Step 2:</strong> Create Backend</p>
             <ol class="step-list">
+                <li>Go to <a href="https://script.google.com/home" target="_blank">script.google.com</a>, Click <strong>New Project</strong>.</li>
+                <li>Delete existing code and <strong>Paste</strong> the code above.</li>
                 <li>Click <strong>Deploy > New Deployment</strong>.</li>
-                <li>Select type: <strong>Web App</strong>.</li>
-                <li>Under "Who has access", choose <strong>"Anyone"</strong>.</li>
-                <li>Click <strong>Deploy</strong>.</li>
+                <li>Select Type: <strong>Web App</strong>.</li>
+                <li>Set "Who has access" to <strong>Anyone</strong>. Click <strong>Deploy</strong>.</li>
                 <li>Copy the <strong>Web App URL</strong> and paste it below:</li>
             </ol>
 
@@ -130,7 +121,7 @@ function sv64(f,b,n){var s=b.split('base64,'),t=s[0].split(':')[1].split(';')[0]
 
         <h1 class="main-divider">ADULT LOGBOOK</h1>
 
-        <h2 class="section-title">1. Cerebrovascular & Endovascular</h2>
+        <h2 class="section-title">1. Cerebrovascular</h2>
         <table class="summary-table">
             <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
             <tbody>
@@ -142,6 +133,7 @@ function sv64(f,b,n){var s=b.split('base64,'),t=s[0].split(':')[1].split(';')[0]
                 <tr><td>Cavernoma Excision</td><td><input readonly id="cv-cav" value="0"></td></tr>
                 <tr><td>EC-IC Bypass / Moya Moya</td><td><input readonly id="cv-bypass" value="0"></td></tr>
                 <tr><td>ICH Evacuation</td><td><input readonly id="cv-ich" value="0"></td></tr>
+                
                 <tr><td style="font-weight:bold; color:#0056b3;">-- Endovascular --</td><td></td></tr>
                 <tr><td>Coiling (Simple)</td><td><input readonly id="cv-coil-s" value="0"></td></tr>
                 <tr><td>Coiling (Balloon/Stent Assisted)</td><td><input readonly id="cv-coil-adv" value="0"></td></tr>
@@ -208,12 +200,12 @@ function sv64(f,b,n){var s=b.split('base64,'),t=s[0].split(':')[1].split(';')[0]
             </tbody>
         </table>
 
-        <h2 class="section-title">5. Other Categories</h2>
+        <h2 class="section-title">5. Other Categories (Australian)</h2>
         <table class="summary-table">
             <thead><tr><th>Procedure</th><th>Count</th></tr></thead>
             <tbody>
                 <tr><td><strong>Cranio-Cervical:</strong> Chiari/Trans-oral</td><td><input readonly id="ot-cvj" value="0"></td></tr>
-                <tr><td><strong>Hydrocephalus:</strong> Shunt/ETV</td><td><input readonly id="ot-hydro" value="0"></td></tr>
+                <tr><td><strong>Hydrocephalus:</strong> Shunt/ETV (Adult)</td><td><input readonly id="ot-hydro" value="0"></td></tr>
                 <tr><td><strong>Infection:</strong> Abscess/Empyema</td><td><input readonly id="ot-inf" value="0"></td></tr>
                 <tr><td><strong>Pain:</strong> Rhizotomy/SCS/Pump</td><td><input readonly id="ot-pain" value="0"></td></tr>
                 <tr><td><strong>Peripheral Nerve:</strong> Carpal/Biopsy</td><td><input readonly id="ot-pn" value="0"></td></tr>
